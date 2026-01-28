@@ -378,6 +378,11 @@
         <translation>Правило</translation>
     </message>
     <message>
+        <location filename="../qml/pages/ConnectionPage.qml" line="1311" />
+        <source>Subscription</source>
+        <translation>Подписка</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/ConnectionPage.qml" line="1349" />
         <source>* Changes to connection settings require reconnecting to take effect</source>
         <translation>* Изменения настроек соединения требуют переподключения</translation>

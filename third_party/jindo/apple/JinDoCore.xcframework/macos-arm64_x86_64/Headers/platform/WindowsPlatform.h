@@ -13,6 +13,8 @@
 #include <QString>
 
 #ifdef Q_OS_WIN
+    // 必须先包含 winsock2.h，再包含 windows.h
+    #include <winsock2.h>
     #include <windows.h>
 
     // ========================================================================

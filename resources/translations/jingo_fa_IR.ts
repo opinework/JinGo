@@ -378,6 +378,11 @@
         <translation>قانون</translation>
     </message>
     <message>
+        <location filename="../qml/pages/ConnectionPage.qml" line="1311" />
+        <source>Subscription</source>
+        <translation>اشتراک</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/ConnectionPage.qml" line="1349" />
         <source>* Changes to connection settings require reconnecting to take effect</source>
         <translation>* تغییرات تنظیمات اتصال نیاز به اتصال مجدد دارد</translation>

@@ -1,73 +1,88 @@
-# JinGo VPN - 开发指南
+# JinGo VPN - Development Guide
 
-## 开发环境
+[中文文档](03_DEVELOPMENT_zh.md)
 
-### 推荐 IDE
+## Development Environment
 
-**Qt Creator** (推荐) - 提供最佳的 Qt/QML 开发体验
+### Recommended IDEs
 
-### Qt Creator 配置
+- **Qt Creator** (Recommended) - Best Qt/QML development experience
+- **VS Code** + Qt plugin - Lightweight option
+- **CLion** - Good for C++ development
 
-1. 打开项目: `File → Open File or Project → CMakeLists.txt`
-2. 选择 Kit:
-   - Android: Android Qt 6.x Clang arm64-v8a
-   - macOS: Desktop Qt 6.x clang 64bit
-   - iOS: iOS Qt 6.x
-   - Linux: Desktop Qt 6.x GCC 64bit
+### Qt Creator Configuration
 
-## 项目结构
+1. Open project: `File → Open File or Project → CMakeLists.txt`
+2. Select Kit:
+   - Android: Android Qt 6.10 Clang arm64-v8a
+   - macOS: Desktop Qt 6.10 clang 64bit
+   - iOS: iOS Qt 6.10
+   - Linux: Desktop Qt 6.10 GCC 64bit
+   - Windows: Desktop Qt 6.10 MinGW 64-bit
+
+## Project Structure
 
 ```
 JinGo/
 ├── src/
-│   ├── main.cpp              # 应用入口
-│   └── platform/             # 平台特定代码
-├── qml/
-│   ├── Main.qml              # 主界面
-│   ├── pages/                # 页面
-│   │   ├── HomePage.qml
-│   │   ├── ServerListPage.qml
-│   │   ├── SettingsPage.qml
-│   │   └── ProfilePage.qml
-│   └── components/           # 组件
-│       ├── ServerItem.qml
-│       ├── ConnectionButton.qml
-│       └── ...
+│   ├── main.cpp              # Application entry
+│   ├── viewmodels/           # MVVM view models
+│   │   ├── ConnectionViewModel.cpp/h   # Connection state management
+│   │   ├── LoginViewModel.cpp/h        # Login logic
+│   │   ├── RegisterViewModel.cpp/h     # Registration logic
+│   │   ├── ServerListViewModel.cpp/h   # Server list
+│   │   └── SettingsViewModel.cpp/h     # Settings management
+│   ├── models/
+│   │   └── SubscriptionListModel.cpp/h # QML list model
+│   └── ui/
+│       └── SystemTrayManager.cpp/h     # System tray
 ├── resources/
-│   ├── icons/                # 图标
-│   └── translations/         # 翻译文件
-└── third_party/              # 预编译依赖库
+│   ├── qml/
+│   │   ├── Main.qml                    # Main interface
+│   │   ├── pages/
+│   │   │   ├── ConnectionPage.qml      # Connection page
+│   │   │   ├── ServerListPage.qml      # Server list
+│   │   │   ├── SubscriptionPage.qml    # Subscription management
+│   │   │   ├── SettingsPage.qml        # Settings page
+│   │   │   └── ProfilePage.qml         # User profile
+│   │   ├── components/                 # Common components
+│   │   └── dialogs/                    # Dialogs
+│   └── translations/                   # Translation files
+└── third_party/                        # Pre-compiled dependencies
 ```
 
-## QML 开发
+## QML Development
 
-### QML 与 C++ 交互
+### QML and C++ Interaction
 
-核心类通过 `main.cpp` 注册到 QML 上下文：
+Core classes are registered to QML context in `main.cpp`:
 
 ```cpp
 // main.cpp
+QQmlContext* rootContext = engine.rootContext();
 rootContext->setContextProperty("vpnManager", &VPNManager::instance());
 rootContext->setContextProperty("authManager", &AuthManager::instance());
+rootContext->setContextProperty("configManager", &ConfigManager::instance());
+rootContext->setContextProperty("subscriptionManager", &SubscriptionManager::instance());
 ```
 
-### 在 QML 中使用
+### Using in QML
 
 ```qml
-// HomePage.qml
+// ConnectionPage.qml
 import QtQuick
 
 Item {
     Connections {
         target: vpnManager
 
-        function onConnected() {
-            console.log("VPN 已连接")
+        function onConnectionStateChanged() {
+            console.log("State changed:", vpnManager.connectionState)
         }
     }
 
     Button {
-        text: vpnManager.isConnected ? "断开" : "连接"
+        text: vpnManager.isConnected ? qsTr("Disconnect") : qsTr("Connect")
         onClicked: {
             if (vpnManager.isConnected) {
                 vpnManager.disconnect()
@@ -79,132 +94,196 @@ Item {
 }
 ```
 
-### 常用 QML 属性
+### Common QML Properties
 
 ```qml
 // VPNManager
-vpnManager.isConnected       // bool: 是否已连接
-vpnManager.state             // enum: 连接状态
-vpnManager.currentServer     // Server: 当前服务器
-vpnManager.uploadSpeed       // qint64: 上传速度
-vpnManager.downloadSpeed     // qint64: 下载速度
+vpnManager.isConnected           // bool: Connected status
+vpnManager.connectionState       // enum: Connection state
+vpnManager.currentServer         // Server: Current server
+vpnManager.uploadSpeed           // qint64: Upload speed (bytes/s)
+vpnManager.downloadSpeed         // qint64: Download speed (bytes/s)
+vpnManager.currentDelay          // int: Current latency (ms)
+
+// ConfigManager
+configManager.vpnMode            // enum: VPN mode (TUN/Proxy)
+configManager.routingMode        // enum: Routing mode (Global/Rule/Subscription)
+configManager.localSocksPort     // int: Local SOCKS port
+configManager.localHttpPort      // int: Local HTTP port
 
 // AuthManager
-authManager.isAuthenticated  // bool: 是否已登录
-authManager.currentUser      // User: 当前用户
+authManager.isAuthenticated      // bool: Login status
+authManager.currentUser          // User: Current user
+
+// SubscriptionManager
+subscriptionManager.subscriptions    // list: Subscription list
+subscriptionManager.isUpdating       // bool: Is updating
 ```
 
-## 多语言支持
+## Internationalization
 
-### 添加新翻译
+### Adding New Translations
 
-1. 在 QML 中使用 `qsTr()` 包裹文本：
+1. Wrap text with `qsTr()` in QML:
 ```qml
 Text {
     text: qsTr("Connect")
 }
 ```
 
-2. 生成/更新翻译文件：
+2. Update translation files:
 ```bash
-lupdate qml/ -ts resources/translations/jingo_new_LANG.ts
+# Use build script to update translations
+./scripts/build/build-linux.sh --translate
 ```
 
-3. 使用 Qt Linguist 翻译
+3. Edit `resources/translations/jingo_*.ts` with Qt Linguist
 
-4. 编译翻译：
+4. Compile translations:
 ```bash
 lrelease resources/translations/*.ts
 ```
 
-## 调试
+### Supported Languages
 
-### 启用详细日志
+| File | Language |
+|------|----------|
+| `jingo_en_US.ts` | English |
+| `jingo_zh_CN.ts` | Simplified Chinese |
+| `jingo_zh_TW.ts` | Traditional Chinese |
+| `jingo_vi_VN.ts` | Vietnamese |
+| `jingo_km_KH.ts` | Khmer |
+| `jingo_my_MM.ts` | Burmese |
+| `jingo_ru_RU.ts` | Russian |
+| `jingo_fa_IR.ts` | Persian |
+
+## Debugging
+
+### Enable Verbose Logging
 
 ```bash
 # Linux/macOS
 QT_LOGGING_RULES="*.debug=true" ./JinGo
 
-# Android
-adb logcat -s JinGo:V
+# Or specify module
+QT_LOGGING_RULES="jingo.*.debug=true" ./JinGo
 ```
 
-### QML 调试
+### Log File Locations
+
+| Platform | Location |
+|----------|----------|
+| Linux | `~/.local/share/JinGo/logs/` |
+| macOS | `~/Library/Application Support/Opine Work/JinGo/logs/` |
+| Windows | `%APPDATA%\Opine Work\JinGo\logs\` |
+
+### QML Debugging
 
 ```qml
-console.log("变量值:", someVariable)
-console.warn("警告信息")
-console.error("错误信息")
+// Output debug information
+console.log("Variable value:", someVariable)
+console.warn("Warning message")
+console.error("Error message")
+
+// Output object properties
+console.log(JSON.stringify(someObject, null, 2))
 ```
 
-### Android 远程调试
+### Android Remote Debugging
 
 ```bash
-# 查看日志
-adb logcat | grep -E "JinGo|SuperRay|Qt"
+# View logs
+adb logcat -s JinGo:V SuperRay-JNI:V Qt:V
 
-# 部署并运行
+# Filter specific tags
+adb logcat | grep -E "JinGo|SuperRay|VPN"
+
+# Deploy and run
 ./scripts/build/build-android.sh --debug --install
 ```
 
-## 代码风格
+## Code Style
 
-### C++ 风格
+### C++ Style
 
 ```cpp
-// 类名: PascalCase
+// Class name: PascalCase
 class VPNManager {
 public:
-    // 方法名: camelCase
+    // Method name: camelCase
     void connectToServer(const Server& server);
 
-    // 成员变量: m_ 前缀
+    // Constants: UPPER_CASE
+    static const int MAX_RETRY_COUNT = 3;
+
+private:
+    // Member variables: m_ prefix
     QString m_serverAddress;
+    int m_retryCount;
 };
 ```
 
-### QML 风格
+### QML Style
 
 ```qml
-// 文件名: PascalCase.qml
+// Filename: PascalCase.qml
 Item {
     id: root
 
-    // 属性声明在前
+    // Properties first
     property string title: ""
+    property bool isActive: false
 
-    // 信号声明
+    // Signal declarations
     signal clicked()
+    signal valueChanged(int newValue)
 
-    // 子组件
-    Rectangle { id: background }
+    // Child components
+    Rectangle {
+        id: background
+        anchors.fill: parent
+    }
 
-    // 函数在后
-    function doSomething() { }
+    // Functions last
+    function doSomething() {
+        // ...
+    }
 }
 ```
 
-## 常见开发任务
+## Common Development Tasks
 
-### 添加新页面
+### Adding a New Page
 
-1. 创建 QML 文件: `qml/pages/NewPage.qml`
-2. 在 `CMakeLists.txt` 添加到 QML 模块
-3. 在 `Main.qml` 添加导航
+1. Create QML file: `resources/qml/pages/NewPage.qml`
+2. Add file to `resources/qml/CMakeLists.txt` or `qml.qrc`
+3. Add navigation entry in `Main.qml`
 
-### 添加新设置项
+### Adding a New Setting
 
-1. 在 `SettingsPage.qml` 添加 UI 控件
-2. 绑定到 ConfigManager 属性
+1. Add property in `ConfigManager` (JinDo)
+2. Add UI control in `SettingsPage.qml`
+3. Bind to configManager property
 
-## 发布检查清单
+### Adding a New Translation Key
 
-- [ ] 更新版本号 (CMakeLists.txt)
-- [ ] 更新翻译
-- [ ] Release 模式编译
-- [ ] 测试所有平台
+1. Use `qsTr("New Text")` in QML
+2. Run `lupdate` to update .ts files
+3. Translate with Qt Linguist
+4. Run `lrelease` to compile
 
-## 相关文档
+## Release Checklist
 
-- [构建指南](02_BUILD_GUIDE.md)
-- [架构说明](01_ARCHITECTURE.md)
+- [ ] Update version number (`PROJECT_VERSION` in `CMakeLists.txt`)
+- [ ] Update translation files
+- [ ] Compile in Release mode
+- [ ] Test all platforms
+- [ ] Check logs for sensitive information
+- [ ] Update CHANGELOG
+
+## Related Documentation
+
+- [Architecture](01_ARCHITECTURE.md)
+- [Build Guide](02_BUILD_GUIDE.md)
+- [Troubleshooting](05_TROUBLESHOOTING.md)
+- [Panel Extension](07_PANEL_EXTENSION.md)

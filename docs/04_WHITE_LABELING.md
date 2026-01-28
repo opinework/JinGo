@@ -1,33 +1,35 @@
-# JinGo VPN - 白标定制指南
+# JinGo VPN - White-labeling Guide
 
-## 概述
+[中文文档](04_WHITE_LABELING_zh.md)
 
-JinGo VPN 支持白标定制，允许创建独立品牌的 VPN 应用：
+## Overview
 
-- 品牌名称和标识
-- 应用图标
-- 颜色主题
-- API 服务器配置
+JinGo VPN supports white-labeling, allowing creation of independently branded VPN applications:
 
-## 白标目录结构
+- Brand name and identity
+- Application icons
+- Color themes
+- API server configuration
+
+## White-label Directory Structure
 
 ```
 white-labeling/
-├── 1/                         # 品牌 1 (默认)
-│   ├── bundle_config.json     # 品牌配置
-│   └── icons/                 # 图标资源
-│       ├── app.png            # 主图标 (1024x1024)
+├── 1/                         # Brand 1 (default)
+│   ├── bundle_config.json     # Brand configuration
+│   └── icons/                 # Icon resources
+│       ├── app.png            # Main icon (1024x1024)
 │       ├── app.icns           # macOS
 │       ├── app.ico            # Windows
-│       ├── ios/               # iOS 各尺寸
-│       └── android/           # Android 各密度
-├── 2/                         # 品牌 2
+│       ├── ios/               # iOS sizes
+│       └── android/           # Android densities
+├── 2/                         # Brand 2
 │   └── ...
-└── 3/                         # 品牌 3
+└── 3/                         # Brand 3
     └── ...
 ```
 
-## 品牌配置文件
+## Brand Configuration File
 
 ### bundle_config.json
 
@@ -55,39 +57,39 @@ white-labeling/
 }
 ```
 
-## 创建新品牌
+## Creating a New Brand
 
-### 1. 复制模板
+### 1. Copy Template
 
 ```bash
 cd white-labeling
-cp -r 1 4  # 创建品牌 4
+cp -r 1 4  # Create brand 4
 ```
 
-### 2. 修改配置
+### 2. Modify Configuration
 
-编辑 `4/bundle_config.json`，更新品牌信息。
+Edit `4/bundle_config.json` and update brand information.
 
-### 3. 替换图标
+### 3. Replace Icons
 
-将品牌图标放入 `4/icons/` 目录：
+Place brand icons in `4/icons/` directory:
 
-| 文件 | 用途 |
-|------|------|
-| `app.png` | 源图标 (1024x1024) |
+| File | Purpose |
+|------|---------|
+| `app.png` | Source icon (1024x1024) |
 | `app.icns` | macOS |
 | `app.ico` | Windows |
-| `ios/` | iOS 各尺寸 |
-| `android/mipmap-*/` | Android 各密度 |
+| `ios/` | iOS sizes |
+| `android/mipmap-*/` | Android densities |
 
-## 编译白标应用
+## Building White-label Applications
 
 ```bash
 # macOS
-./scripts/build/build-macos.sh --brand 4 --skip-sign
+./scripts/build/build-macos.sh --brand 4
 
 # iOS
-./scripts/build/build-ios.sh --brand 4
+./scripts/build/build-ios.sh --brand 4 --team-id YOUR_TEAM_ID
 
 # Android
 ./scripts/build/build-android.sh --brand 4 --abi arm64-v8a
@@ -96,9 +98,9 @@ cp -r 1 4  # 创建品牌 4
 ./scripts/build/build-linux.sh --brand 4
 ```
 
-## 主题定制
+## Theme Customization
 
-### QML 中使用品牌颜色
+### Using Brand Colors in QML
 
 ```qml
 Rectangle {
@@ -112,21 +114,21 @@ Button {
 }
 ```
 
-## 常见问题
+## Common Issues
 
-### 图标显示不正确
+### Icons Not Displaying Correctly
 
-1. 检查图标尺寸是否完整
-2. 清理构建缓存：`--clean`
-3. 卸载旧版本再安装
+1. Check if icon sizes are complete
+2. Clean build cache: `--clean`
+3. Uninstall old version before installing
 
-### 主题颜色不生效
+### Theme Colors Not Applied
 
-1. 检查 `bundle_config.json` 格式
-2. 确认颜色值格式正确（#RRGGBB）
-3. 重新编译应用
+1. Check `bundle_config.json` format
+2. Ensure color values are correct (#RRGGBB)
+3. Rebuild application
 
-## 相关文档
+## Related Documentation
 
-- [构建指南](02_BUILD_GUIDE.md)
-- [故障排除](05_TROUBLESHOOTING.md)
+- [Build Guide](02_BUILD_GUIDE.md)
+- [Troubleshooting](05_TROUBLESHOOTING.md)

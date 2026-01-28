@@ -12,6 +12,8 @@
 
 #ifdef _WIN32
 
+// 必须先包含 winsock2.h，再包含 windows.h
+#include <winsock2.h>
 #include <Windows.h>
 #include <string>
 

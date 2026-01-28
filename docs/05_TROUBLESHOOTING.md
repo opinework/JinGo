@@ -1,131 +1,133 @@
-# JinGo VPN - 故障排除指南
+# JinGo VPN - Troubleshooting Guide
 
-## 编译问题
+[中文文档](05_TROUBLESHOOTING_zh.md)
 
-### Qt 找不到
+## Build Issues
 
-**错误信息:**
+### Qt Not Found
+
+**Error:**
 ```
 CMake Error: Could not find Qt6
 ```
 
-**解决方法:**
+**Solution:**
 
-确保构建脚本开头的 Qt 路径正确：
+Ensure Qt path is correct in build scripts:
 ```bash
 # macOS
-QT_MACOS_PATH="/path/to/Qt/6.x.x/macos"
+QT_MACOS_PATH="/path/to/Qt/6.10.0/macos"
 
 # Linux
-QT_DIR="/path/to/Qt/6.x.x/gcc_64"
+QT_DIR="/path/to/Qt/6.10.0/gcc_64"
 
 # iOS
-QT_IOS_PATH="/path/to/Qt/6.x.x/ios"
+QT_IOS_PATH="/path/to/Qt/6.10.0/ios"
 ```
 
-### Android NDK 版本不匹配
+### Android NDK Version Mismatch
 
-**错误信息:**
+**Error:**
 ```
 CMake Error: Android NDK not found or version mismatch
 ```
 
-**解决方法:**
+**Solution:**
 
-编辑 `build-android.sh` 中的 NDK 版本：
+Edit NDK version in `build-android.sh`:
 ```bash
 ANDROID_NDK_VERSION="27.2.12479018"
 ```
 
-## 运行时问题
+## Runtime Issues
 
-### VPN 连接失败
+### VPN Connection Failed
 
-**可能原因:**
+**Possible causes:**
 
-1. **服务器不可达** - 检查网络连接
-2. **权限不足** - 见下方平台特定解决方案
-3. **配置错误** - 检查服务器配置
+1. **Server unreachable** - Check network connection
+2. **Insufficient permissions** - See platform-specific solutions below
+3. **Configuration error** - Check server configuration
 
-### Linux: TUN 设备创建失败
+### Linux: TUN Device Creation Failed
 
-**错误信息:**
+**Error:**
 ```
 Failed to create TUN device: Operation not permitted
 ```
 
-**解决方法:**
+**Solution:**
 ```bash
-# 方法 1: 设置权限
+# Method 1: Set capability
 sudo setcap cap_net_admin+eip ./JinGo
 
-# 方法 2: 以 root 运行
+# Method 2: Run as root
 sudo ./JinGo
 ```
 
-### macOS: 需要 Root 权限
+### macOS: Requires Root Permission
 
-macOS 使用 TUN 设备需要管理员权限：
+macOS TUN device requires administrator privileges:
 ```bash
 sudo open build-macos/bin/Debug/JinGo.app
 ```
 
-### Windows: WinTun 驱动安装失败
+### Windows: WinTun Driver Installation Failed
 
-以管理员身份运行应用，驱动会自动安装。
+Run application as Administrator, driver will install automatically.
 
-### Android: VPN 权限被拒绝
+### Android: VPN Permission Denied
 
-1. 进入系统设置 → 应用 → JinGo
-2. 清除应用数据
-3. 重新打开应用并授权 VPN 权限
+1. Go to System Settings → Apps → JinGo
+2. Clear app data
+3. Reopen app and grant VPN permission
 
-## 网络问题
+## Network Issues
 
-### API 请求失败
+### API Request Failed
 
-**排查步骤:**
+**Troubleshooting steps:**
 
-1. 检查网络连接
-2. 验证 API 服务器地址
-3. 启用详细日志：
+1. Check network connection
+2. Verify API server address
+3. Enable verbose logging:
 ```bash
 QT_LOGGING_RULES="*.debug=true" ./JinGo
 ```
 
-### SSL 证书错误
+### SSL Certificate Error
 
-1. 检查系统时间是否正确
-2. 更新系统 CA 证书
+1. Check if system time is correct
+2. Update system CA certificates
 
-## UI 问题
+## UI Issues
 
-### QML 加载失败
+### QML Loading Failed
 
-**解决方法:**
+**Solution:**
 
-检查 Qt QML 模块是否安装完整。
+Check if Qt QML modules are fully installed.
 
-### 高 DPI 显示问题
+### High DPI Display Issues
 
 ```bash
-# 设置缩放因子
+# Set scale factor
 export QT_SCALE_FACTOR=1.5
 
-# 或自动检测
+# Or auto detect
 export QT_AUTO_SCREEN_SCALE_FACTOR=1
 ```
 
-### Linux Wayland 显示问题
+### Linux Wayland Display Issues
 
 ```bash
-# 强制使用 X11
+# Force X11
 QT_QPA_PLATFORM=xcb ./JinGo
 ```
 
-## 数据问题
+## Data Issues
 
-### 清理应用数据
+### Clear Application Data
 
 ```bash
 # Linux
@@ -141,63 +143,63 @@ rmdir /s %APPDATA%\JinGo
 rmdir /s %LOCALAPPDATA%\JinGo
 ```
 
-## 日志和调试
+## Logging and Debugging
 
-### 启用详细日志
+### Enable Verbose Logging
 
 ```bash
-# 全部调试日志
+# All debug logs
 QT_LOGGING_RULES="*.debug=true" ./JinGo
 
 # Android
 adb logcat -s JinGo:V
 ```
 
-### 日志文件位置
+### Log File Locations
 
-| 平台 | 位置 |
-|------|------|
+| Platform | Location |
+|----------|----------|
 | Linux | `~/.local/share/JinGo/logs/` |
 | macOS | `~/Library/Logs/JinGo/` |
 | Windows | `%APPDATA%\JinGo\logs\` |
 
-## 平台特定问题速查
+## Platform-Specific Quick Reference
 
 ### Android
 
-| 问题 | 解决方法 |
-|------|----------|
-| 后台被杀 | 添加到电池优化白名单 |
-| 通知不显示 | 检查通知权限 |
+| Issue | Solution |
+|-------|----------|
+| Background killed | Add to battery optimization whitelist |
+| Notifications not showing | Check notification permission |
 
 ### iOS
 
-| 问题 | 解决方法 |
-|------|----------|
-| VPN 配置失败 | 检查 Network Extension 权限 |
-| 证书错误 | 重新签名应用 |
+| Issue | Solution |
+|-------|----------|
+| VPN configuration failed | Check Network Extension permission |
+| Certificate error | Re-sign application |
 
 ### macOS
 
-| 问题 | 解决方法 |
-|------|----------|
-| 权限不足 | 以 sudo 运行 |
+| Issue | Solution |
+|-------|----------|
+| Permission denied | Run with sudo |
 
 ### Windows
 
-| 问题 | 解决方法 |
-|------|----------|
-| DLL 缺失 | 重新运行 windeployqt |
-| 驱动安装失败 | 以管理员运行 |
+| Issue | Solution |
+|-------|----------|
+| DLL missing | Re-run windeployqt |
+| Driver installation failed | Run as Administrator |
 
 ### Linux
 
-| 问题 | 解决方法 |
-|------|----------|
-| 权限不足 | 设置 CAP_NET_ADMIN 或 sudo |
-| 库找不到 | 设置 LD_LIBRARY_PATH |
+| Issue | Solution |
+|-------|----------|
+| Permission denied | Set CAP_NET_ADMIN or use sudo |
+| Library not found | Set LD_LIBRARY_PATH |
 
-## 相关文档
+## Related Documentation
 
-- [构建指南](02_BUILD_GUIDE.md)
-- [开发指南](03_DEVELOPMENT.md)
+- [Build Guide](02_BUILD_GUIDE.md)
+- [Development Guide](03_DEVELOPMENT.md)

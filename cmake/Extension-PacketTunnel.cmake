@@ -6,7 +6,7 @@
 # Architecture:
 #   - NEPacketTunnelProvider implementation (TUN mode)
 #   - SuperRay - 统一的Xray-core和TUN处理库
-#   - XrayCBridge - Extension-internal Xray management (使用SuperRay LibXray兼容API)
+#   - XrayCBridge - Extension-internal Xray management (使用SuperRay SuperRay兼容API)
 #   - Xray runs inside Extension process via SuperRay
 #
 # Usage:
@@ -39,7 +39,7 @@ message(STATUS "========================================")
 # Note: XrayCore runs inside Extension, not in main process
 # Extension includes:
 #   1. PacketTunnelProvider - NEPacketTunnelProvider implementation (TUN mode)
-#   2. XrayCBridge - Xray management inside Extension (uses SuperRay LibXray API)
+#   2. XrayCBridge - Xray management inside Extension (uses SuperRay SuperRay API)
 #
 # IMPORTANT: iOS App Extension uses _NSExtensionMain as entry point (no main.m needed)
 #            macOS System Extension uses startSystemExtensionMode (needs main.m)
@@ -186,9 +186,9 @@ target_include_directories(PacketTunnelProvider PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/extensions/PacketTunnelProvider
 )
 
-# Add libxray include if available
-if(EXISTS ${LIBXRAY_INCLUDE_DIR})
-    target_include_directories(PacketTunnelProvider PRIVATE ${LIBXRAY_INCLUDE_DIR})
+# Add SuperRay include if available
+if(EXISTS ${SUPERRAY_INCLUDE_DIR})
+    target_include_directories(PacketTunnelProvider PRIVATE ${SUPERRAY_INCLUDE_DIR})
 endif()
 
 # ============================================================================
@@ -201,7 +201,7 @@ target_compile_options(PacketTunnelProvider PRIVATE
     $<$<COMPILE_LANGUAGE:OBJC>:-fobjc-arc>
 )
 
-# iOS/macOS requires -fmodules for @import syntax in LibXray headers
+# iOS/macOS requires -fmodules for @import syntax in SuperRay headers
 if(APPLE AND NOT ANDROID)
     # Directly set fmodules and fcxx-modules for all source files
     target_compile_options(PacketTunnelProvider PRIVATE -fmodules -fcxx-modules)
@@ -251,12 +251,12 @@ endif()
 # Extension contains complete Xray instance listening on 127.0.0.1:10808
 # TUN mode: SuperRay handles TUN device creation and packet processing
 
-if(USE_SUPERRAY AND EXISTS ${LIBXRAY_LIB})
-    message(STATUS "Linking LibXray to Extension: ${LIBXRAY_LIB}")
-    target_link_directories(PacketTunnelProvider PRIVATE "${LIBXRAY_LIBRARY_DIR}")
-    target_link_options(PacketTunnelProvider PRIVATE "-F${LIBXRAY_LIBRARY_DIR}")
+if(USE_SUPERRAY AND EXISTS ${SUPERRAY_LIB})
+    message(STATUS "Linking SuperRay to Extension: ${SUPERRAY_LIB}")
+    target_link_directories(PacketTunnelProvider PRIVATE "${SUPERRAY_LIBRARY_DIR}")
+    target_link_options(PacketTunnelProvider PRIVATE "-F${SUPERRAY_LIBRARY_DIR}")
     target_link_libraries(PacketTunnelProvider PRIVATE
-        "${LIBXRAY_LIB}"
+        "${SUPERRAY_LIB}"
         "-lz"
         "-lresolv"
     )

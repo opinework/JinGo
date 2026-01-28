@@ -34,19 +34,28 @@ else
     QT_IOS_PATH="/Volumes/mindata/Applications/Qt/6.10.0/ios"
 fi
 
-# --------------------- Apple 开发者配置 ---------------------
-# 开发团队 ID
-TEAM_ID="6HP2RFA5AK"
-# 签名身份: "Apple Development" (开发) 或 "Apple Distribution" (发布)
-CODE_SIGN_IDENTITY="Apple Development"
+# --------------------- Apple 开发者配置 (必需!) ---------------------
+# ⚠️  iOS 构建必须签名，请在下面填入您的开发者信息
+#
+# 开发团队 ID (在 Apple Developer 账号中查看)
+# 示例: "ABC123DEF4"
+TEAM_ID="${APPLE_DEVELOPMENT_TEAM:-YOUR_TEAM_ID_HERE}"
+
+# 签名身份:
+#   - "Apple Development" (开发/测试)
+#   - "Apple Distribution" (App Store/Ad Hoc 分发)
+CODE_SIGN_IDENTITY="${APPLE_CODE_SIGN_IDENTITY:-Apple Development}"
 
 # --------------------- Provisioning Profile 名称 ---------------------
-PROFILE_MAIN="JinGo Accelerator iOS"
-PROFILE_PACKET_TUNNEL="JinGo PacketTunnel iOS"
+# 在 Apple Developer 网站创建并下载对应的 Provisioning Profile
+# 将 .mobileprovision 文件放到 platform/ios/cert/ 目录
+PROFILE_MAIN="${IOS_PROFILE_MAIN:-JinGo Accelerator iOS}"
+PROFILE_PACKET_TUNNEL="${IOS_PROFILE_PACKET_TUNNEL:-JinGo PacketTunnel iOS}"
 
 # --------------------- 测试设备配置 ---------------------
 # 默认测试设备 UDID (用于 --install 选项)
-DEFAULT_DEVICE_UDID="00008030-001238903A90802E"
+# 使用 Xcode > Window > Devices 查看设备 UDID
+DEFAULT_DEVICE_UDID="${IOS_DEVICE_UDID:-}"
 
 # --------------------- 脚本初始化 ---------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -141,17 +150,25 @@ JinGoVPN iOS 构建脚本
     -b, --brand NAME     应用白标定制（从 white-labeling/<NAME> 加载配置）
     --bundle-id ID       指定 Bundle ID (如 cfd.jingo.vpn)
                          扩展会自动派生: ID.PacketTunnelProvider
+    --team-id ID         Apple 开发团队 ID (必需，除非已在脚本中配置)
+    --sign-identity ID   代码签名身份 (默认: Apple Development)
     --profile-main NAME      主应用 Provisioning Profile 名称
     --profile-tunnel NAME    PacketTunnel 扩展 Provisioning Profile 名称
     -h, --help           显示帮助信息
 
 环境变量:
-    APPLE_DEVELOPMENT_TEAM    Apple 开发团队 ID（默认: P6H5GHKRFU）
-    APPLE_CODE_SIGN_IDENTITY  代码签名身份（默认: iPhone Developer）
-    QT_IOS_PATH               Qt iOS 安装路径（默认: /Volumes/mindata/Applications/Qt/6.10.0/ios）
-    APP_BUNDLE_ID             应用 Bundle ID（默认: cfd.jingo.acc）
-    IOS_PROFILE_MAIN          主应用 Provisioning Profile
-    IOS_PROFILE_PACKET_TUNNEL PacketTunnel 扩展 Provisioning Profile
+    APPLE_DEVELOPMENT_TEAM    Apple 开发团队 ID（必需！）
+    APPLE_CODE_SIGN_IDENTITY  代码签名身份（默认: Apple Development）
+    QT_IOS_PATH               Qt iOS 安装路径
+    APP_BUNDLE_ID             应用 Bundle ID（默认: work.opine.jingo）
+    IOS_PROFILE_MAIN          主应用 Provisioning Profile 名称
+    IOS_PROFILE_PACKET_TUNNEL PacketTunnel 扩展 Provisioning Profile 名称
+    IOS_DEVICE_UDID           默认安装设备 UDID
+
+首次使用:
+    1. 编辑脚本顶部的 'Apple 开发者配置' 部分
+    2. 设置 TEAM_ID 为您的开发团队 ID
+    3. 将 Provisioning Profile 放到 platform/ios/cert/ 目录
 
 示例:
     # 仅生成 Xcode 项目
@@ -217,6 +234,22 @@ parse_args() {
                 APP_BUNDLE_ID="$2"
                 shift 2
                 ;;
+            --team-id)
+                if [[ -z "$2" ]] || [[ "$2" == -* ]]; then
+                    print_error "--team-id 需要指定开发团队 ID"
+                    exit 1
+                fi
+                TEAM_ID="$2"
+                shift 2
+                ;;
+            --sign-identity)
+                if [[ -z "$2" ]] || [[ "$2" == -* ]]; then
+                    print_error "--sign-identity 需要指定签名身份"
+                    exit 1
+                fi
+                CODE_SIGN_IDENTITY="$2"
+                shift 2
+                ;;
             --profile-main)
                 if [[ -z "$2" ]] || [[ "$2" == -* ]]; then
                     print_error "--profile-main 需要指定 Profile 名称"
@@ -277,6 +310,29 @@ check_requirements() {
         print_error "此脚本只能在 macOS 上运行"
         exit 1
     fi
+
+    # 检查 TEAM_ID 配置 (iOS 必须签名)
+    if [[ "$TEAM_ID" == "YOUR_TEAM_ID_HERE" ]] || [[ -z "$TEAM_ID" ]]; then
+        print_error "═══════════════════════════════════════════════════════════════"
+        print_error "  iOS 构建需要配置 Apple 开发者团队 ID"
+        print_error "═══════════════════════════════════════════════════════════════"
+        print_error ""
+        print_error "请执行以下步骤："
+        print_error ""
+        print_error "  1. 打开脚本文件: scripts/build/build-ios.sh"
+        print_error "  2. 找到 'Apple 开发者配置' 部分"
+        print_error "  3. 将 TEAM_ID 修改为您的开发团队 ID"
+        print_error ""
+        print_error "  或者通过环境变量设置:"
+        print_error "    export APPLE_DEVELOPMENT_TEAM=\"YOUR_TEAM_ID\""
+        print_error ""
+        print_error "  获取 Team ID 的方法:"
+        print_error "    - 登录 https://developer.apple.com"
+        print_error "    - 进入 Membership 页面查看 Team ID"
+        print_error ""
+        exit 1
+    fi
+    print_success "开发团队 ID: $TEAM_ID"
 
     # 检查 CMake
     if ! command -v cmake &> /dev/null; then

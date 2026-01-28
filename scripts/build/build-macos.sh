@@ -50,13 +50,18 @@ MACOS_DEPLOYMENT_TARGET="12.0"
 # 目标架构: "arm64", "x86_64", 或 "arm64;x86_64" (Universal)
 MACOS_ARCHITECTURES="arm64;x86_64"
 
-# --------------------- Apple 开发者配置 ---------------------
+# --------------------- Apple 开发者配置 (可选) ---------------------
+# macOS 构建默认不需要签名，以管理员模式运行 TUN 设备
+# 如需签名分发，请取消下面的注释并填入您的开发者信息
+#
 # 开发团队 ID (可通过环境变量 APPLE_DEVELOPMENT_TEAM 覆盖)
-TEAM_ID="${APPLE_DEVELOPMENT_TEAM:-P6H5GHKRFU}"
+# TEAM_ID="${APPLE_DEVELOPMENT_TEAM:-YOUR_TEAM_ID}"
+TEAM_ID="${APPLE_DEVELOPMENT_TEAM:-}"
 
 # 签名身份 (可通过环境变量 APPLE_CODE_SIGN_IDENTITY 覆盖)
 # macOS 分发使用 Developer ID Application
-CODE_SIGN_IDENTITY="${APPLE_CODE_SIGN_IDENTITY:-Developer ID Application}"
+# CODE_SIGN_IDENTITY="${APPLE_CODE_SIGN_IDENTITY:-Developer ID Application}"
+CODE_SIGN_IDENTITY="${APPLE_CODE_SIGN_IDENTITY:-}"
 
 # --------------------- 应用信息 ---------------------
 APP_NAME="JinGo"
@@ -93,7 +98,7 @@ CONFIGURATION="Debug"
 CLEAN_BUILD=false
 OPEN_APP=false
 XCODE_ONLY=false
-SKIP_SIGN=false
+SKIP_SIGN=true   # macOS 默认不签名，使用管理员模式运行
 CREATE_DMG=false
 UPDATE_TRANSLATIONS=false
 VERBOSE=false
@@ -174,11 +179,15 @@ ${CYAN}构建选项:${NC}
     -x, --xcode          仅生成 Xcode 项目（不编译）
 
 ${CYAN}签名与打包:${NC}
-    -s, --skip-sign      跳过代码签名
+    --sign               启用代码签名（需要配置 TEAM_ID 和证书）
     --dmg                创建 DMG 安装镜像（仅 Release 模式）
 
 ${CYAN}翻译选项:${NC}
     -t, --translate      更新翻译（运行 Python 翻译脚本）
+
+${CYAN}签名配置 (使用 --sign 时需要):${NC}
+    --team-id ID         Apple 开发团队 ID
+    --sign-identity ID   代码签名身份 (默认: Developer ID Application)
 
 ${CYAN}白标定制:${NC}
     -b, --brand NAME     应用白标定制（从 white-labeling/<NAME> 加载配置）
@@ -190,8 +199,8 @@ ${CYAN}其他选项:${NC}
     -h, --help           显示此帮助信息
 
 ${CYAN}环境变量:${NC}
-    APPLE_DEVELOPMENT_TEAM    Apple 开发团队 ID（默认: P6H5GHKRFU）
-    APPLE_CODE_SIGN_IDENTITY  代码签名身份（默认: Developer ID Application）
+    APPLE_DEVELOPMENT_TEAM    Apple 开发团队 ID（签名时必需）
+    APPLE_CODE_SIGN_IDENTITY  代码签名身份（签名时必需，如 "Developer ID Application"）
     QT_MACOS_PATH             Qt macOS 安装路径
     APP_BUNDLE_ID             应用 Bundle ID（默认: cfd.jingo.acc）
 
@@ -251,7 +260,12 @@ parse_args() {
                 XCODE_ONLY=true
                 shift
                 ;;
-            -s|--skip-sign)
+            -s|--sign)
+                SKIP_SIGN=false
+                shift
+                ;;
+            --skip-sign)
+                # 保留向后兼容（但现在默认就是跳过签名）
                 SKIP_SIGN=true
                 shift
                 ;;
@@ -281,6 +295,22 @@ parse_args() {
                     exit 1
                 fi
                 APP_BUNDLE_ID="$2"
+                shift 2
+                ;;
+            --team-id)
+                if [[ -z "$2" ]] || [[ "$2" == -* ]]; then
+                    print_error "--team-id 需要指定开发团队 ID"
+                    exit 1
+                fi
+                TEAM_ID="$2"
+                shift 2
+                ;;
+            --sign-identity)
+                if [[ -z "$2" ]] || [[ "$2" == -* ]]; then
+                    print_error "--sign-identity 需要指定签名身份"
+                    exit 1
+                fi
+                CODE_SIGN_IDENTITY="$2"
                 shift 2
                 ;;
             -h|--help)
@@ -357,14 +387,26 @@ check_requirements() {
         exit 1
     fi
 
-    # 证书检测移至签名阶段 (sign_app 函数)
-    # 这里只显示签名模式信息
+    # 签名模式检查
     if [[ "$SKIP_SIGN" == true ]]; then
-        print_info "签名: 已禁用 (--skip-sign)"
-    elif [[ -n "${BUILD_KEYCHAIN:-}" ]]; then
-        print_info "签名: CI 模式 (Keychain: $BUILD_KEYCHAIN)"
+        print_info "签名: 已禁用 (默认模式，使用 --sign 启用)"
     else
-        print_info "签名: 本地开发模式"
+        # 启用签名时检查 TEAM_ID 配置
+        if [[ -z "$TEAM_ID" ]]; then
+            print_error "启用签名需要配置 TEAM_ID"
+            print_info "使用 --team-id YOUR_TEAM_ID 或设置 APPLE_DEVELOPMENT_TEAM 环境变量"
+            exit 1
+        fi
+        if [[ -z "$CODE_SIGN_IDENTITY" ]]; then
+            CODE_SIGN_IDENTITY="Developer ID Application"
+        fi
+        if [[ -n "${BUILD_KEYCHAIN:-}" ]]; then
+            print_info "签名: CI 模式 (Keychain: $BUILD_KEYCHAIN)"
+        else
+            print_info "签名: 本地开发模式"
+        fi
+        print_info "开发团队: $TEAM_ID"
+        print_info "签名身份: $CODE_SIGN_IDENTITY"
     fi
 
     echo ""

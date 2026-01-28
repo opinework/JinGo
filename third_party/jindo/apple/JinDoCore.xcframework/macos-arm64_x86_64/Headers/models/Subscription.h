@@ -19,6 +19,11 @@
 // FIX: 包含 Server 的完整定义
 #include "Server.h"
 
+// 前向声明 Clash 配置相关类
+class ProxyGroup;
+class Rule;
+class DnsConfig;
+
 /**
  * @class Subscription
  * @brief 订阅数据模型
@@ -87,6 +92,15 @@ class Subscription : public QObject
     /// 流量使用百分比（只读，流量变化时发出 trafficChanged 信号）
     Q_PROPERTY(int trafficUsagePercent READ trafficUsagePercent NOTIFY trafficChanged)
 
+    /// Clash 代理组数量（只读）
+    Q_PROPERTY(int proxyGroupCount READ proxyGroupCount NOTIFY proxyGroupsChanged)
+
+    /// Clash 路由规则数量（只读）
+    Q_PROPERTY(int ruleCount READ ruleCount NOTIFY rulesChanged)
+
+    /// 是否有 DNS 配置（只读）
+    Q_PROPERTY(bool hasDnsConfig READ hasDnsConfig NOTIFY dnsConfigChanged)
+
 public:
     /**
      * @enum SubscriptionType
@@ -98,6 +112,7 @@ public:
      * - SIP008: Shadowsocks SIP008 JSON 格式
      * - V2rayN: V2rayN 客户端格式
      * - Clash: Clash 代理工具的 YAML 格式
+     * - SingBox: sing-box JSON 格式（outbounds 数组）
      * - Surfboard: Surfboard 客户端格式
      * - Custom: 自定义格式
      */
@@ -106,6 +121,7 @@ public:
         SIP008,         ///< Shadowsocks SIP008 JSON 格式
         V2rayN,         ///< V2rayN 格式
         Clash,          ///< Clash YAML 格式
+        SingBox,        ///< sing-box JSON 格式
         Surfboard,      ///< Surfboard 格式
         Custom          ///< 自定义格式
     };
@@ -676,6 +692,101 @@ public:
      */
     bool isUrlValid() const;
 
+    // ========== Clash 配置 ==========
+
+    /**
+     * @brief 获取代理组数量
+     * @return int 代理组数量
+     */
+    int proxyGroupCount() const;
+
+    /**
+     * @brief 获取所有代理组
+     * @return QList<ProxyGroup*> 代理组列表
+     */
+    QList<ProxyGroup*> proxyGroups() const;
+
+    /**
+     * @brief 设置代理组列表
+     * @param groups 新的代理组列表
+     */
+    void setProxyGroups(const QList<ProxyGroup*>& groups);
+
+    /**
+     * @brief 添加代理组
+     * @param group 要添加的代理组
+     */
+    void addProxyGroup(ProxyGroup* group);
+
+    /**
+     * @brief 清空代理组
+     */
+    void clearProxyGroups();
+
+    /**
+     * @brief 根据名称查找代理组
+     * @param name 代理组名称
+     * @return ProxyGroup* 代理组指针，未找到返回 nullptr
+     */
+    ProxyGroup* findProxyGroup(const QString& name) const;
+
+    /**
+     * @brief 获取路由规则数量
+     * @return int 路由规则数量
+     */
+    int ruleCount() const;
+
+    /**
+     * @brief 获取所有路由规则
+     * @return QList<Rule*> 路由规则列表
+     */
+    QList<Rule*> rules() const;
+
+    /**
+     * @brief 设置路由规则列表
+     * @param rules 新的路由规则列表
+     */
+    void setRules(const QList<Rule*>& rules);
+
+    /**
+     * @brief 添加路由规则
+     * @param rule 要添加的路由规则
+     */
+    void addRule(Rule* rule);
+
+    /**
+     * @brief 清空路由规则
+     */
+    void clearRules();
+
+    /**
+     * @brief 检查是否有 DNS 配置
+     * @return bool 是否有 DNS 配置
+     */
+    bool hasDnsConfig() const;
+
+    /**
+     * @brief 获取 DNS 配置
+     * @return DnsConfig* DNS 配置指针，可能为 nullptr
+     */
+    DnsConfig* dnsConfig() const;
+
+    /**
+     * @brief 设置 DNS 配置
+     * @param config DNS 配置
+     */
+    void setDnsConfig(DnsConfig* config);
+
+    /**
+     * @brief 清空 DNS 配置
+     */
+    void clearDnsConfig();
+
+    /**
+     * @brief 清空所有 Clash 配置（代理组、规则、DNS）
+     */
+    void clearClashConfig();
+
     // ========== 工具方法 ==========
 
     /**
@@ -823,6 +934,21 @@ signals:
      */
     void updateProgress(int percentage);
 
+    /**
+     * @brief 代理组变化信号
+     */
+    void proxyGroupsChanged();
+
+    /**
+     * @brief 路由规则变化信号
+     */
+    void rulesChanged();
+
+    /**
+     * @brief DNS 配置变化信号
+     */
+    void dnsConfigChanged();
+
 private:
     // ========== 基本属性 ==========
     QString m_id;                    ///< 订阅唯一标识符
@@ -861,6 +987,11 @@ private:
     QString m_userAgent;             ///< User-Agent 字符串
     int m_timeout;                   ///< 超时时间（秒）
     bool m_verifySSL;                ///< 是否验证 SSL 证书
+
+    // ========== Clash 配置 ==========
+    QList<ProxyGroup*> m_proxyGroups;  ///< Clash 代理组列表
+    QList<Rule*> m_rules;              ///< Clash 路由规则列表
+    DnsConfig* m_dnsConfig;            ///< Clash DNS 配置
 
     /**
      * @brief 生成唯一 ID

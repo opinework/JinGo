@@ -1,57 +1,62 @@
-# JinGo VPN - 平台构建指南
+# JinGo VPN - Platform Build Guide
+
+[中文文档](06_PLATFORMS_zh.md)
 
 ## 1. macOS
 
-### 系统要求
+### System Requirements
 
-| 项目 | 要求 |
-|------|------|
+| Item | Requirement |
+|------|-------------|
 | macOS | 12.0+ (Monterey) |
 | Xcode | 15.0+ |
-| Qt | 6.5+ (macOS 组件) |
+| Qt | 6.10.0+ (macOS component) |
 
-### 支持架构
+### Supported Architectures
 
 - **arm64**: Apple Silicon (M1/M2/M3/M4)
 - **x86_64**: Intel Mac
 
-默认构建 Universal Binary (同时支持两种架构)。
+Default builds Universal Binary (supports both architectures).
 
-### 环境配置
+### Environment Setup
 
 ```bash
-# 安装 Xcode 命令行工具
+# Install Xcode command line tools
 xcode-select --install
 ```
 
-使用 Qt 在线安装器安装 Qt 6.5 → macOS。
+Use Qt Online Installer to install Qt 6.10 → macOS.
 
-### 构建
+### Build
 
-1. 编辑 `scripts/build/build-macos.sh` 第 28 行配置 Qt 路径：
-
-```bash
-QT_MACOS_PATH="/your/path/to/Qt/6.x.x/macos"
-```
-
-2. 编译：
+1. Edit `scripts/build/build-macos.sh` line 28 to configure Qt path:
 
 ```bash
-# Debug 构建
-./scripts/build/build-macos.sh --skip-sign
-
-# Release 构建
-./scripts/build/build-macos.sh --release --skip-sign
-
-# 清理后重新构建
-./scripts/build/build-macos.sh --clean --skip-sign
+QT_MACOS_PATH="/your/path/to/Qt/6.10.0/macos"
 ```
 
-3. 输出：`build-macos/bin/Debug/JinGo.app` 或 `build-macos/bin/Release/JinGo.app`
+2. Build:
 
-### 运行
+```bash
+# Debug build (no signing by default)
+./scripts/build/build-macos.sh
 
-macOS 使用 TUN 设备需要管理员权限：
+# Release build
+./scripts/build/build-macos.sh --release
+
+# Clean and rebuild
+./scripts/build/build-macos.sh --clean
+
+# With code signing
+./scripts/build/build-macos.sh --release --sign --team-id YOUR_TEAM_ID
+```
+
+3. Output: `build-macos/bin/Debug/JinGo.app` or `build-macos/bin/Release/JinGo.app`
+
+### Running
+
+macOS TUN device requires administrator privileges:
 
 ```bash
 sudo open build-macos/bin/Debug/JinGo.app
@@ -61,50 +66,50 @@ sudo open build-macos/bin/Debug/JinGo.app
 
 ## 2. Windows
 
-### 系统要求
+### System Requirements
 
-| 项目 | 要求 |
-|------|------|
-| Windows | 10/11 (64位) |
-| Qt | 6.5+ (MinGW 64-bit 组件) |
+| Item | Requirement |
+|------|-------------|
+| Windows | 10/11 (64-bit) |
+| Qt | 6.10.0+ (MinGW 64-bit component) |
 
-### 环境配置
+### Environment Setup
 
-使用 Qt 在线安装器安装 Qt 6.5 → MinGW 64-bit。Qt 安装程序会自动安装所需的 MinGW 编译器。
+Use Qt Online Installer to install Qt 6.10 → MinGW 64-bit. Qt installer will automatically install the required MinGW compiler.
 
-### 构建
+### Build
 
-1. 编辑 `scripts/build/build-windows.ps1` 开头的 Qt 路径。
+1. Edit `scripts/build/build-windows.ps1` for Qt path.
 
-2. 编译：
+2. Build:
 
 ```powershell
-# 在 PowerShell 中运行
+# Run in PowerShell
 .\scripts\build\build-windows.ps1 -Release
 
-# 或使用 wrapper
+# Or use wrapper
 .\scripts\build\build-windows-wrapper.bat
 ```
 
-3. 输出：`build-windows\bin\JinGo.exe`
+3. Output: `build-windows\bin\JinGo.exe`
 
-### 运行
+### Running
 
-首次运行需要以管理员身份运行以安装 WinTun 驱动。
+First run requires Administrator privileges to install WinTun driver.
 
 ---
 
 ## 3. Linux
 
-### 系统要求
+### System Requirements
 
-| 项目 | 要求 |
-|------|------|
-| 发行版 | Ubuntu 20.04+, Debian 11+, Fedora 35+ |
-| 架构 | x86_64 (64位) |
-| Qt | 6.5+ |
+| Item | Requirement |
+|------|-------------|
+| Distribution | Ubuntu 20.04+, Debian 11+, Fedora 35+ |
+| Architecture | x86_64 (64-bit) |
+| Qt | 6.10.0+ |
 
-### 依赖安装
+### Install Dependencies
 
 **Ubuntu/Debian:**
 
@@ -124,15 +129,15 @@ sudo dnf install -y \
     libxkbcommon-devel libxkbcommon-x11-devel
 ```
 
-### 构建
+### Build
 
-1. 编辑 `scripts/build/build-linux.sh` 第 28 行配置 Qt 路径：
+1. Edit `scripts/build/build-linux.sh` line 28 to configure Qt path:
 
 ```bash
-QT_DIR="/your/path/to/Qt/6.x.x/gcc_64"
+QT_DIR="/your/path/to/Qt/6.10.0/gcc_64"
 ```
 
-2. 编译：
+2. Build:
 
 ```bash
 # Debug
@@ -142,15 +147,15 @@ QT_DIR="/your/path/to/Qt/6.x.x/gcc_64"
 ./scripts/build/build-linux.sh --release
 ```
 
-3. 输出：`build-linux/bin/JinGo`
+3. Output: `build-linux/bin/JinGo`
 
-### 运行
+### Running
 
 ```bash
-# 方法 1: 设置 capabilities
+# Method 1: Set capabilities
 sudo setcap cap_net_admin+eip build-linux/bin/JinGo
 
-# 方法 2: 以 root 运行
+# Method 2: Run as root
 sudo ./build-linux/bin/JinGo
 ```
 
@@ -158,54 +163,54 @@ sudo ./build-linux/bin/JinGo
 
 ## 4. Android
 
-### 系统要求
+### System Requirements
 
-| 项目 | 要求 |
-|------|------|
+| Item | Requirement |
+|------|-------------|
 | Android SDK | API 28+ (Android 9.0) |
 | Android NDK | 27.2.12479018 |
 | Java | JDK 17+ |
-| Qt | 6.5+ (Android 组件) |
+| Qt | 6.10.0+ (Android component) |
 
-### 支持架构
+### Supported Architectures
 
-- **arm64-v8a**: 64位 ARM (主流设备)
-- **armeabi-v7a**: 32位 ARM (旧设备)
+- **arm64-v8a**: 64-bit ARM (mainstream devices)
+- **armeabi-v7a**: 32-bit ARM (older devices)
 
-### 环境配置
+### Environment Setup
 
-1. 安装 Android Studio: https://developer.android.com/studio
-2. 通过 SDK Manager 安装：
+1. Install Android Studio: https://developer.android.com/studio
+2. Install via SDK Manager:
    - SDK Platform: Android 14 (API 34)
    - NDK: 27.2.12479018
-3. 使用 Qt 在线安装器安装 Qt 6.5 → Android
+3. Use Qt Online Installer to install Qt 6.10 → Android
 
-### 构建
+### Build
 
-1. 编辑 `scripts/build/build-android.sh` 开头：
+1. Edit `scripts/build/build-android.sh`:
 
 ```bash
-QT_BASE_PATH="/your/path/to/Qt/6.5"
+QT_BASE_PATH="/your/path/to/Qt/6.10"
 ANDROID_SDK_ROOT="/path/to/Android/sdk"
 ANDROID_NDK_VERSION="27.2.12479018"
 ```
 
-2. 编译：
+2. Build:
 
 ```bash
-# 构建 arm64
+# Build arm64
 ./scripts/build/build-android.sh --abi arm64-v8a
 
-# 构建所有架构
+# Build all architectures
 ./scripts/build/build-android.sh --abi all
 
-# 安装到设备
+# Install to device
 ./scripts/build/build-android.sh --abi arm64-v8a --install
 ```
 
-3. 输出：`build-android/android-build/build/outputs/apk/`
+3. Output: `build-android/android-build/build/outputs/apk/`
 
-### 调试
+### Debugging
 
 ```bash
 adb logcat -s JinGo:V
@@ -215,63 +220,63 @@ adb logcat -s JinGo:V
 
 ## 5. iOS
 
-### 系统要求
+### System Requirements
 
-| 项目 | 要求 |
-|------|------|
+| Item | Requirement |
+|------|-------------|
 | macOS | 12.0+ |
 | Xcode | 15.0+ |
-| iOS 目标 | iOS 15.0+ |
-| Qt | 6.5+ (iOS 组件) |
-| Apple Developer | 需要开发者账号 |
+| iOS Target | iOS 15.0+ |
+| Qt | 6.10.0+ (iOS component) |
+| Apple Developer | Developer account required |
 
-### 环境配置
+### Environment Setup
 
 ```bash
-# 安装 Xcode 命令行工具
+# Install Xcode command line tools
 xcode-select --install
 
-# 接受许可
+# Accept license
 sudo xcodebuild -license accept
 ```
 
-使用 Qt 在线安装器安装 Qt 6.5 → iOS。
+Use Qt Online Installer to install Qt 6.10 → iOS.
 
-### 构建
+### Build
 
-1. 编辑 `scripts/build/build-ios.sh` 开头：
+1. Edit `scripts/build/build-ios.sh`:
 
 ```bash
-QT_IOS_PATH="/your/path/to/Qt/6.x.x/ios"
+QT_IOS_PATH="/your/path/to/Qt/6.10.0/ios"
 TEAM_ID="YOUR_TEAM_ID"
 CODE_SIGN_IDENTITY="Apple Development"
 ```
 
-2. 编译：
+2. Build:
 
 ```bash
-# 生成 Xcode 项目（推荐）
+# Generate Xcode project (recommended)
 ./scripts/build/build-ios.sh --xcode
 open build-ios/JinGo.xcodeproj
 
-# 命令行构建
-./scripts/build/build-ios.sh --release
+# Command line build
+./scripts/build/build-ios.sh --release --team-id YOUR_TEAM_ID
 
-# 模拟器构建
+# Simulator build
 ./scripts/build/build-ios.sh --simulator
 ```
 
-3. 输出：`build-ios/bin/Debug-iphoneos/JinGo.app`
+3. Output: `build-ios/bin/Debug-iphoneos/JinGo.app`
 
-### 签名配置
+### Signing Configuration
 
-1. 在 Apple Developer 创建 App ID
-2. 创建 Provisioning Profile
-3. 在 Xcode 中配置签名
+1. Create App ID in Apple Developer
+2. Create Provisioning Profile
+3. Configure signing in Xcode
 
 ---
 
-## 相关文档
+## Related Documentation
 
-- [构建指南](02_BUILD_GUIDE.md)
-- [故障排除](05_TROUBLESHOOTING.md)
+- [Build Guide](02_BUILD_GUIDE.md)
+- [Troubleshooting](05_TROUBLESHOOTING.md)

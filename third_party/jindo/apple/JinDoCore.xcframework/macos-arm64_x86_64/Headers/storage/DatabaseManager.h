@@ -20,8 +20,11 @@
 class Subscription;
 class Server;
 class User;
+class ProxyGroup;
+class Rule;
+class DnsConfig;
 
-#define DATABASE_VERSION 5 // 数据库版本升级 - 添加resolvedIP字段
+#define DATABASE_VERSION 7 // 数据库版本升级 - 完善协议字段支持
 
 class DatabaseManager : public QObject
 {
@@ -86,6 +89,34 @@ public:
     bool deleteConfig(const QString& key);
     bool clearAllConfigs();
 
+    // ProxyGroup operations (Clash 代理组)
+    bool saveProxyGroup(ProxyGroup* group);
+    bool saveProxyGroups(const QList<ProxyGroup*>& groups);
+    bool deleteProxyGroup(const QString& groupId);
+    bool deleteProxyGroupsBySubscription(const QString& subscriptionId);
+    ProxyGroup* getProxyGroup(const QString& groupId, QObject* parent = nullptr);
+    QList<ProxyGroup*> getProxyGroupsBySubscription(const QString& subscriptionId, QObject* parent = nullptr);
+
+    // Rule operations (Clash 路由规则)
+    bool saveRule(Rule* rule);
+    bool saveRules(const QList<Rule*>& rules);
+    bool deleteRule(const QString& ruleId);
+    bool deleteRulesBySubscription(const QString& subscriptionId);
+    Rule* getRule(const QString& ruleId, QObject* parent = nullptr);
+    QList<Rule*> getRulesBySubscription(const QString& subscriptionId, QObject* parent = nullptr);
+
+    // DnsConfig operations (Clash DNS 配置)
+    bool saveDnsConfig(DnsConfig* config);
+    bool deleteDnsConfig(const QString& configId);
+    bool deleteDnsConfigBySubscription(const QString& subscriptionId);
+    DnsConfig* getDnsConfigBySubscription(const QString& subscriptionId, QObject* parent = nullptr);
+
+    // Clash 配置批量操作
+    bool updateSubscriptionClashConfig(const QString& subscriptionId,
+                                       const QList<ProxyGroup*>& proxyGroups,
+                                       const QList<Rule*>& rules,
+                                       DnsConfig* dnsConfig);
+
     // Maintenance
     bool clearAllData();
     bool vacuum();
@@ -112,6 +143,9 @@ private:
     bool createPlansTable();
     bool createConfigTable();
     bool createVersionTable();
+    bool createProxyGroupTable();
+    bool createRuleTable();
+    bool createDnsConfigTable();
 
     bool upgradeDatabase(int fromVersion, int toVersion);
     int getDatabaseVersion() const;
@@ -120,6 +154,9 @@ private:
     Server* loadServerFromQuery(QSqlQuery& query, QObject* parent);
     Subscription* loadSubscriptionFromQuery(QSqlQuery& query, QObject* parent);
     User* loadUserFromQuery(QSqlQuery& query, QObject* parent);
+    ProxyGroup* loadProxyGroupFromQuery(QSqlQuery& query, QObject* parent);
+    Rule* loadRuleFromQuery(QSqlQuery& query, QObject* parent);
+    DnsConfig* loadDnsConfigFromQuery(QSqlQuery& query, QObject* parent);
 
     bool executeTransaction(std::function<bool()> operation);
     void logError(const QString& operation, const QSqlQuery& query);

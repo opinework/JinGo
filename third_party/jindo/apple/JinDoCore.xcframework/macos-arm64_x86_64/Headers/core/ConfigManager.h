@@ -121,9 +121,10 @@ public:
      * @details 定义代理的路由规则
      */
     enum RoutingMode {
-        Global,    ///< 全局模式：所有流量都走代理
-        Rule,      ///< 规则模式：根据 GeoIP 决定是否走代理
-        Direct     ///< 直连模式：所有流量直连不走代理
+        Global,        ///< 全局模式：所有流量都走代理
+        Rule,          ///< 规则模式：根据 GeoIP 决定是否走代理
+        Direct,        ///< 直连模式：所有流量直连不走代理
+        Subscription   ///< 订阅模式：使用订阅配置中的路由规则
     };
     Q_ENUM(RoutingMode)
 

@@ -378,6 +378,11 @@
         <translation>規則</translation>
     </message>
     <message>
+        <location filename="../qml/pages/ConnectionPage.qml" line="1311" />
+        <source>Subscription</source>
+        <translation>訂閱</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/ConnectionPage.qml" line="1349" />
         <source>* Changes to connection settings require reconnecting to take effect</source>
         <translation>* 連接設定的變更需要重新連接才能生效</translation>

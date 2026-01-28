@@ -81,7 +81,7 @@ class Server : public QObject
 
 public:
     // 协议类型枚举
-    enum Protocol { Unknown, VMess, VLESS, Trojan, Shadowsocks, Socks, HTTP };
+    enum Protocol { Unknown, VMess, VLESS, Trojan, Shadowsocks, Socks, HTTP, Hysteria, Hysteria2, TUIC, WireGuard };
     Q_ENUM(Protocol)
 
     // 网络类型枚举
@@ -149,6 +149,38 @@ public:
 
     // XTLS getters
     QString flow() const;
+
+    // Hysteria/Hysteria2 getters
+    QString hysteriaProtocol() const;      // 协议版本 (udp, wechat-video等)
+    QString hysteriaObfs() const;          // 混淆密码
+    QString hysteriaObfsType() const;      // 混淆类型 (salamander等)
+    QString hysteriaAuth() const;          // 认证字符串
+    int hysteriaUpMbps() const;            // 上行带宽限制 (Mbps)
+    int hysteriaDownMbps() const;          // 下行带宽限制 (Mbps)
+    QString hysteriaRecvWindow() const;    // 接收窗口
+    QString hysteriaRecvWindowConn() const;// 连接接收窗口
+    bool hysteriaDisableMtuDiscovery() const; // 禁用MTU发现
+
+    // TUIC getters
+    QString tuicUuid() const;              // TUIC UUID
+    QString tuicToken() const;             // TUIC Token (v4)
+    QString tuicCongestionControl() const; // 拥塞控制算法 (bbr, cubic等)
+    QString tuicUdpRelayMode() const;      // UDP中继模式 (native, quic)
+    bool tuicReduceRtt() const;            // 减少RTT (0-RTT)
+    int tuicHeartbeatInterval() const;     // 心跳间隔 (ms)
+
+    // WireGuard getters
+    QString wgPrivateKey() const;          // 私钥
+    QString wgPublicKey() const;           // 服务器公钥
+    QString wgPresharedKey() const;        // 预共享密钥
+    QString wgLocalAddress() const;        // 本地地址
+    int wgMtu() const;                     // MTU
+    QString wgReserved() const;            // 保留字节
+
+    // 通用字段
+    bool udpEnabled() const;               // UDP支持
+    QString plugin() const;                // 插件名称 (obfs等)
+    QString pluginOpts() const;            // 插件选项
 
     QString subscriptionId() const;
     QString subscriptionUrl() const;
@@ -228,6 +260,38 @@ public:
 
     // XTLS setters
     void setFlow(const QString& flow);
+
+    // Hysteria/Hysteria2 setters
+    void setHysteriaProtocol(const QString& protocol);
+    void setHysteriaObfs(const QString& obfs);
+    void setHysteriaObfsType(const QString& obfsType);
+    void setHysteriaAuth(const QString& auth);
+    void setHysteriaUpMbps(int upMbps);
+    void setHysteriaDownMbps(int downMbps);
+    void setHysteriaRecvWindow(const QString& recvWindow);
+    void setHysteriaRecvWindowConn(const QString& recvWindowConn);
+    void setHysteriaDisableMtuDiscovery(bool disable);
+
+    // TUIC setters
+    void setTuicUuid(const QString& uuid);
+    void setTuicToken(const QString& token);
+    void setTuicCongestionControl(const QString& cc);
+    void setTuicUdpRelayMode(const QString& mode);
+    void setTuicReduceRtt(bool reduce);
+    void setTuicHeartbeatInterval(int interval);
+
+    // WireGuard setters
+    void setWgPrivateKey(const QString& key);
+    void setWgPublicKey(const QString& key);
+    void setWgPresharedKey(const QString& key);
+    void setWgLocalAddress(const QString& address);
+    void setWgMtu(int mtu);
+    void setWgReserved(const QString& reserved);
+
+    // 通用字段 setters
+    void setUdpEnabled(bool enabled);
+    void setPlugin(const QString& plugin);
+    void setPluginOpts(const QString& opts);
 
     void setSubscriptionId(const QString& subscriptionId);
     void setSubscriptionUrl(const QString& url);
@@ -322,6 +386,10 @@ private:
     static Server* parseVLESSLink(const QString& link, QObject* parent);
     static Server* parseTrojanLink(const QString& link, QObject* parent);
     static Server* parseShadowsocksLink(const QString& link, QObject* parent);
+    static Server* parseHysteriaLink(const QString& link, QObject* parent);
+    static Server* parseHysteria2Link(const QString& link, QObject* parent);
+    static Server* parseTuicLink(const QString& link, QObject* parent);
+    static Server* parseWireGuardLink(const QString& link, QObject* parent);
     static QString urlDecode(const QString& encoded);
     static QString urlEncode(const QString& data);
 
@@ -367,6 +435,38 @@ private:
 
     // XTLS参数
     QString m_flow;              // XTLS流控模式 (xtls-rprx-vision等)
+
+    // Hysteria/Hysteria2 参数
+    QString m_hysteriaProtocol;      // 协议版本
+    QString m_hysteriaObfs;          // 混淆密码
+    QString m_hysteriaObfsType;      // 混淆类型
+    QString m_hysteriaAuth;          // 认证字符串
+    int m_hysteriaUpMbps;            // 上行带宽限制
+    int m_hysteriaDownMbps;          // 下行带宽限制
+    QString m_hysteriaRecvWindow;    // 接收窗口
+    QString m_hysteriaRecvWindowConn;// 连接接收窗口
+    bool m_hysteriaDisableMtuDiscovery; // 禁用MTU发现
+
+    // TUIC 参数
+    QString m_tuicUuid;              // TUIC UUID
+    QString m_tuicToken;             // TUIC Token
+    QString m_tuicCongestionControl; // 拥塞控制
+    QString m_tuicUdpRelayMode;      // UDP中继模式
+    bool m_tuicReduceRtt;            // 减少RTT
+    int m_tuicHeartbeatInterval;     // 心跳间隔
+
+    // WireGuard 参数
+    QString m_wgPrivateKey;          // 私钥
+    QString m_wgPublicKey;           // 服务器公钥
+    QString m_wgPresharedKey;        // 预共享密钥
+    QString m_wgLocalAddress;        // 本地地址
+    int m_wgMtu;                     // MTU
+    QString m_wgReserved;            // 保留字节
+
+    // 通用参数
+    bool m_udpEnabled;               // UDP支持
+    QString m_plugin;                // 插件名称
+    QString m_pluginOpts;            // 插件选项
 
     QJsonObject m_settings;
     QJsonObject m_streamSettings;

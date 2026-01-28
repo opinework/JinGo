@@ -1,44 +1,46 @@
-# JinGo VPN - 构建指南
+# JinGo VPN - Build Guide
 
-## 快速开始
+[中文文档](02_BUILD_GUIDE_zh.md)
 
-JinGo 的构建非常简单，只需要：
+## Quick Start
 
-1. **安装 Qt 6.10+**（推荐 6.10.0 或更高版本）
-2. **修改构建脚本中的 Qt 路径**（或使用自动检测）
-3. **运行构建脚本**
+Building JinGo is straightforward:
 
-所有依赖库（JinDoCore、OpenSSL、Superray 等）已预编译并包含在 `third_party/` 目录中。
+1. **Install Qt 6.10.0+** (recommended 6.10.0 or higher)
+2. **Configure Qt path in build scripts** (or use auto-detection)
+3. **Run the build script**
 
-> **注意**：Windows 平台的构建脚本已支持自动环境检测，无需手动配置路径。
+All dependencies (JinDoCore, OpenSSL, SuperRay, etc.) are pre-compiled and included in the `third_party/` directory.
 
-## 依赖关系
+> **Note**: Windows build scripts support automatic environment detection, no manual path configuration required.
+
+## Dependencies
 
 ```
-JinGo (Qt 应用)
-├── JinDoCore (静态库)      → third_party/jindo/
-│   └── 核心业务逻辑、API 客户端、VPN 管理
-├── Superray (动态库)       → third_party/superray/
-│   └── VPN 核心引擎 (Xray)
-├── OpenSSL (静态库)        → third_party/*_openssl/
-│   └── 加密支持
-└── WinTun (Windows)        → third_party/wintun/
-    └── Windows TUN 驱动
+JinGo (Qt Application)
+├── JinDoCore (Static Library)  → third_party/jindo/
+│   └── Core business logic, API client, VPN management
+├── SuperRay (Dynamic Library)  → third_party/superray/
+│   └── VPN core engine (Xray)
+├── OpenSSL (Static Library)    → third_party/*_openssl/
+│   └── Encryption support
+└── WinTun (Windows)            → third_party/wintun/
+    └── Windows TUN driver
 ```
 
-**所有依赖库已预编译，无需手动编译。**
+**All dependencies are pre-compiled. No manual compilation required.**
 
-## 目录结构
+## Directory Structure
 
 ```
 JinGo/
 ├── third_party/
-│   ├── jindo/                    # JinDoCore 静态库 (核心)
-│   │   ├── android/              # Android 各架构
+│   ├── jindo/                    # JinDoCore static library (core)
+│   │   ├── android/              # Android architectures
 │   │   ├── apple/                # macOS/iOS
 │   │   ├── linux/
 │   │   └── windows/
-│   ├── superray/                 # VPN 引擎
+│   ├── superray/                 # VPN engine
 │   ├── android_openssl/
 │   ├── apple_openssl/
 │   ├── linux_openssl/
@@ -50,169 +52,182 @@ JinGo/
 │   ├── build-android.sh
 │   ├── build-linux.sh
 │   └── build-windows.ps1
-└── src/                          # 源代码
+└── src/                          # Source code
 ```
 
-## 应用配置
+## Application Configuration
 
-配置文件位于 `resources/bundle_config.json`，用于定义应用的基本信息和服务端点。
+Configuration file is located at `resources/bundle_config.json`, defining app information and service endpoints.
 
-### 配置项说明
+### Configuration Options
 
 ```json
 {
     "config": {
-        "panelUrl": "https://cp.jingo.cfd",        // 控制面板 URL（用户订阅）
-        "appName": "JinGo",                         // 应用名称
-        "supportEmail": "support@jingo.cfd",        // 支持邮箱
-        "privacyPolicyUrl": "https://...",          // 隐私政策链接
-        "termsOfServiceUrl": "https://...",         // 服务条款链接
-        "telegramUrl": "https://t.me/...",          // Telegram 群组
-        "discordUrl": "https://discord.gg/...",     // Discord 服务器
-        "docsUrl": "https://docs.opine.work",       // 文档链接
-        "issuesUrl": "https://opine.work/issues",   // 问题反馈链接
-        "latencyTestUrl": "https://www.google.com/generate_204",  // 延迟测试
-        "ipInfoUrl": "https://ipinfo.io/json",      // IP 信息查询
-        "speedTestBaseUrl": "https://speed.cloudflare.com/__down?bytes=",  // 测速
-        "hideSubscriptionBlock": true,              // 隐藏订阅区块
-        "updateCheckUrl": "https://..."             // 更新检查
+        "panelUrl": "https://cp.jingo.cfd",        // Control panel URL (user subscription)
+        "appName": "JinGo",                         // Application name
+        "supportEmail": "support@jingo.cfd",        // Support email
+        "privacyPolicyUrl": "https://...",          // Privacy policy link
+        "termsOfServiceUrl": "https://...",         // Terms of service link
+        "telegramUrl": "https://t.me/...",          // Telegram group
+        "discordUrl": "https://discord.gg/...",     // Discord server
+        "docsUrl": "https://docs.opine.work",       // Documentation link
+        "issuesUrl": "https://opine.work/issues",   // Issue tracking link
+        "latencyTestUrl": "https://www.google.com/generate_204",  // Latency test
+        "ipInfoUrl": "https://ipinfo.io/json",      // IP info query
+        "speedTestBaseUrl": "https://speed.cloudflare.com/__down?bytes=",  // Speed test
+        "hideSubscriptionBlock": true,              // Hide subscription block
+        "updateCheckUrl": "https://..."             // Update check
     }
 }
 ```
 
-### 主要配置项
+### Main Configuration Items
 
-| 配置项 | 说明 |
-|--------|------|
-| `panelUrl` | 用户订阅面板地址，用于获取节点配置 |
-| `appName` | 应用显示名称 |
-| `supportEmail` | 用户支持邮箱 |
-| `hideSubscriptionBlock` | 是否隐藏界面中的订阅区块 |
-| `latencyTestUrl` | 节点延迟测试使用的 URL |
-| `ipInfoUrl` | 获取当前 IP 信息的 API |
-| `speedTestBaseUrl` | 测速下载基础 URL |
+| Option | Description |
+|--------|-------------|
+| `panelUrl` | User subscription panel address for node configuration |
+| `appName` | Application display name |
+| `supportEmail` | User support email |
+| `hideSubscriptionBlock` | Whether to hide subscription block in UI |
+| `latencyTestUrl` | URL for node latency testing |
+| `ipInfoUrl` | API for current IP info |
+| `speedTestBaseUrl` | Speed test download base URL |
 
-### 授权验证（已禁用）
+### License Verification (Disabled)
 
-当前版本已移除授权验证功能，配置文件中的以下字段保留但不生效：
+License verification has been removed in the current version. The following fields are preserved but not functional:
 
 ```json
 {
-    "license": { ... },        // 授权信息（已禁用）
-    "licenseServer": { ... }   // 授权服务器（已禁用）
+    "license": { ... },        // License info (disabled)
+    "licenseServer": { ... }   // License server (disabled)
 }
 ```
 
-应用启动时不再进行授权检查，可直接使用全部功能。
+The application starts without license checks, all features are available.
 
 ---
 
-## 环境搭建
+## Environment Setup
 
-### 第一步：安装 Qt
+### Step 1: Install Qt
 
-**版本要求：Qt 6.10+**（推荐 Qt 6.10.0 或更高版本）
+**Version requirement: Qt 6.10.0+** (recommended Qt 6.10.0 or higher)
 
-1. 下载 Qt 在线安装器：https://www.qt.io/download-qt-installer
-2. 运行安装器，选择 Qt 6.10 或更高版本
-3. 根据目标平台选择组件：
+1. Download Qt Online Installer: https://www.qt.io/download-qt-installer
+2. Run installer, select Qt 6.10.0 or higher
+3. Select components based on target platform:
 
-| 目标平台 | 需要安装的 Qt 组件 |
-|---------|-------------------|
-| macOS | Qt 6.10+ → macOS |
-| iOS | Qt 6.10+ → iOS |
-| Android | Qt 6.10+ → Android (arm64-v8a, armeabi-v7a) |
-| Linux | Qt 6.10+ → Desktop gcc 64-bit |
-| Windows | Qt 6.10+ → MinGW 64-bit |
+| Target Platform | Required Qt Components |
+|----------------|------------------------|
+| macOS | Qt 6.10.0+ → macOS |
+| iOS | Qt 6.10.0+ → iOS |
+| Android | Qt 6.10.0+ → Android (arm64-v8a, armeabi-v7a) |
+| Linux | Qt 6.10.0+ → Desktop gcc 64-bit |
+| Windows | Qt 6.10.0+ → MinGW 64-bit |
 
-> **注意**：项目使用 Qt 6.10.0/6.10.1。Windows 平台构建脚本支持自动检测 Qt 和 MinGW 环境。
+> **Note**: Project uses Qt 6.10.0/6.10.1. Windows build scripts support automatic Qt and MinGW environment detection.
 
-### 第二步：平台特定工具
+### Step 2: Platform-Specific Tools
 
-| 平台 | 额外需要 |
-|------|---------|
-| macOS | Xcode (App Store 安装) |
-| iOS | Xcode + Apple Developer 账号 |
+| Platform | Additional Requirements |
+|----------|------------------------|
+| macOS | Xcode (install from App Store) |
+| iOS | Xcode + Apple Developer Account |
 | Android | Android Studio (SDK + NDK) |
 | Linux | GCC: `sudo apt install build-essential cmake` |
-| Windows | 无（Qt 自带 MinGW） |
+| Windows | None (Qt includes MinGW) |
 
-## macOS 构建
+## macOS Build
 
-### 1. 配置 Qt 路径
+### 1. Configure Qt Path
 
-编辑 `scripts/build/build-macos.sh` 第 28 行：
+Edit `scripts/build/build-macos.sh` line 28:
 
 ```bash
-QT_MACOS_PATH="/your/path/to/Qt/6.x.x/macos"
+QT_MACOS_PATH="/your/path/to/Qt/6.10.0/macos"
 ```
 
-### 2. 构建
+### 2. Build
 
 ```bash
-# 构建（跳过签名，开发测试用）
-./scripts/build/build-macos.sh --skip-sign
+# Build (no signing by default, for development)
+./scripts/build/build-macos.sh
 
-# 清理后重新构建
-./scripts/build/build-macos.sh --clean --skip-sign
+# Clean and rebuild
+./scripts/build/build-macos.sh --clean
 
-# Release 版本
-./scripts/build/build-macos.sh --release --skip-sign
+# Release version
+./scripts/build/build-macos.sh --release
+
+# With code signing
+./scripts/build/build-macos.sh --release --sign --team-id YOUR_TEAM_ID
 ```
 
-### 3. 运行
+### 3. Run
 
 ```bash
-# 以 root 权限运行（TUN 设备需要）
+# Run with root privileges (required for TUN device)
 sudo open build-macos/bin/Debug/JinGo.app
 ```
 
-## iOS 构建
+## iOS Build
 
-### 1. 配置
+### 1. Configure
 
-编辑 `scripts/build/build-ios.sh` 开头：
+Edit `scripts/build/build-ios.sh`:
 
 ```bash
-QT_IOS_PATH="/your/path/to/Qt/6.x.x/ios"
-TEAM_ID="YOUR_TEAM_ID"
+QT_IOS_PATH="/your/path/to/Qt/6.10.0/ios"
 ```
 
-### 2. 构建
+Or use command line option:
 
 ```bash
-# 生成 Xcode 项目后在 Xcode 中构建
-./scripts/build/build-ios.sh --xcode
+./scripts/build/build-ios.sh --team-id YOUR_TEAM_ID
+```
+
+### 2. Build
+
+```bash
+# Generate Xcode project and build in Xcode
+./scripts/build/build-ios.sh --xcode --team-id YOUR_TEAM_ID
 open build-ios/JinGo.xcodeproj
+
+# Or command line build
+./scripts/build/build-ios.sh --release --team-id YOUR_TEAM_ID
 ```
 
-## Android 构建
+> **Note**: iOS builds require Apple Developer Team ID for signing.
 
-### 1. 安装 Android SDK/NDK
+## Android Build
 
-通过 Android Studio 安装：
+### 1. Install Android SDK/NDK
+
+Install via Android Studio:
 - SDK Platform: Android 14 (API 34)
 - NDK: 27.2.12479018
 
-### 2. 配置
+### 2. Configure
 
-编辑 `scripts/build/build-android.sh` 开头：
+Edit `scripts/build/build-android.sh`:
 
 ```bash
-QT_BASE_PATH="/your/path/to/Qt/6.x.x"
+QT_BASE_PATH="/your/path/to/Qt/6.10.0"
 ANDROID_SDK_ROOT="/path/to/Android/sdk"
 ANDROID_NDK_VERSION="27.2.12479018"
 ```
 
-### 3. 构建
+### 3. Build
 
 ```bash
 ./scripts/build/build-android.sh --abi arm64-v8a
 ```
 
-## Linux 构建
+## Linux Build
 
-### 1. 安装依赖
+### 1. Install Dependencies
 
 ```bash
 sudo apt install -y build-essential cmake ninja-build \
@@ -221,498 +236,217 @@ sudo apt install -y build-essential cmake ninja-build \
     libglib2.0-dev libsecret-1-dev
 ```
 
-### 2. 配置 Qt 路径
+### 2. Configure Qt Path
 
-#### 方法一：设置环境变量（推荐）
+#### Method 1: Environment Variable (Recommended)
 
 ```bash
-export QT_DIR="/mnt/dev/Qt/6.10.1/gcc_64"
-# 或
-export Qt6_DIR="/mnt/dev/Qt/6.10.1/gcc_64"
+export QT_DIR="/mnt/dev/Qt/6.10.0/gcc_64"
+# or
+export Qt6_DIR="/mnt/dev/Qt/6.10.0/gcc_64"
 ```
 
-#### 方法二：修改构建脚本
+#### Method 2: Edit Build Script
 
-编辑 `scripts/build/build-linux.sh` 第 35 行：
+Edit `scripts/build/build-linux.sh` line 35:
 
 ```bash
-QT_DIR="/mnt/dev/Qt/6.10.1/gcc_64"
+QT_DIR="/mnt/dev/Qt/6.10.0/gcc_64"
 ```
 
-### 3. 使用脚本构建
-
-#### 基本构建命令
+### 3. Build
 
 ```bash
-# Debug 模式构建（默认）
+# Debug mode (default)
 ./scripts/build/build-linux.sh
 
-# Release 模式构建
+# Release mode
 ./scripts/build/build-linux.sh --release
 
-# 清理后重新构建
+# Clean and rebuild
 ./scripts/build/build-linux.sh --clean --release
 
-# 部署 Qt 依赖库
+# Deploy Qt dependencies
 ./scripts/build/build-linux.sh --release --deploy
 
-# 创建安装包（DEB/RPM/TGZ）
+# Create installation package (DEB/RPM/TGZ)
 ./scripts/build/build-linux.sh --release --package
 ```
 
-#### 构建选项说明
+### 4. Build Options
 
-| 选项 | 说明 |
-|------|------|
-| `-c, --clean` | 清理构建目录后重新构建 |
-| `-d, --debug` | Debug 模式构建（默认） |
-| `-r, --release` | Release 模式构建 |
-| `-p, --package` | 打包 DEB/RPM/TGZ |
-| `--deploy` | 部署 Qt 依赖库和插件 |
-| `-t, --translate` | 更新翻译 |
-| `-b, --brand NAME` | 应用白标定制 |
-| `-v, --verbose` | 显示详细输出 |
+| Option | Description |
+|--------|-------------|
+| `-c, --clean` | Clean build directory before building |
+| `-d, --debug` | Debug mode build (default) |
+| `-r, --release` | Release mode build |
+| `-p, --package` | Package DEB/RPM/TGZ |
+| `--deploy` | Deploy Qt dependencies and plugins |
+| `-t, --translate` | Update translations |
+| `-b, --brand NAME` | Apply white-label customization |
+| `-v, --verbose` | Show detailed output |
 
-#### 构建示例
+### 5. Build Output
 
-```bash
-# 示例1: 编译 Release 版本
-./scripts/build/build-linux.sh --release
-
-# 示例2: 清理并编译 Release 版本
-./scripts/build/build-linux.sh --clean --release
-
-# 示例3: 编译 Release 版本并部署依赖
-./scripts/build/build-linux.sh --release --deploy
-
-# 示例4: 编译并打包
-./scripts/build/build-linux.sh --release --package
-
-# 示例5: 使用白标定制编译
-./scripts/build/build-linux.sh --brand jingo --release --package
-```
-
-### 4. 构建输出
-
-构建成功后，文件位于：
+After successful build, files are located at:
 
 ```
 build-linux/
 ├── bin/
-│   ├── JinGo                    # 主可执行文件
-│   └── lib/                     # OpenSSL 依赖库
+│   ├── JinGo                    # Main executable
+│   └── lib/                     # OpenSSL dependencies
 │       ├── libssl.so.3
 │       └── libcrypto.so.3
-└── build.log                    # 构建日志
+└── build.log                    # Build log
 ```
 
-Release 模式会额外生成：
+Release mode generates:
 
 ```
 release/
-└── jingo-1.0.0-20260126-linux.tar.gz    # 发布包
+└── jingo-1.0.0-20260126-linux.tar.gz    # Release package
 ```
 
-### 5. 设置 TUN 权限
+### 6. Set TUN Permissions
 
-Linux 需要网络管理权限才能创建 TUN 设备：
+Linux requires network admin permission to create TUN devices:
 
 ```bash
-# 方式一：设置 capability（推荐，无需 root 运行）
+# Method 1: Set capability (recommended, no root required to run)
 sudo setcap cap_net_admin+eip ./build-linux/bin/JinGo
 
-# 方式二：使用 root 权限运行
+# Method 2: Run with root privileges
 sudo ./build-linux/bin/JinGo
 ```
 
-### 6. 运行应用
+## Windows Build
 
-```bash
-# 如果已设置 capability
-./build-linux/bin/JinGo
+### 1. Requirements
 
-# 或使用 sudo
-sudo ./build-linux/bin/JinGo
-```
+- **Qt**: 6.10.0 or higher (MinGW 64-bit)
+- **MinGW**: 13.1.0 or higher (usually installed with Qt)
+- **CMake**: 3.21+ (optional, script uses Qt's bundled CMake)
+- **PowerShell**: Windows PowerShell 5.1+ or PowerShell Core 7+
+- **WiX Toolset 6.0**: (optional, for MSI installer generation)
 
-### 7. 构建故障排查
+### 2. Auto Environment Detection
 
-#### Qt 找不到
+Build script automatically detects these paths (by priority):
 
-```bash
-# 检查 Qt 是否安装
-ls -la /mnt/dev/Qt/6.10.1/gcc_64/bin/qmake
-
-# 设置环境变量
-export QT_DIR=/mnt/dev/Qt/6.10.1/gcc_64
-```
-
-#### 缺少依赖库
-
-```bash
-# Ubuntu/Debian
-sudo apt install -y libglib2.0-dev libsecret-1-dev
-
-# Fedora/RHEL
-sudo dnf install -y glib2-devel libsecret-devel
-```
-
-#### 编译速度慢
-
-```bash
-# 安装 Ninja 构建工具（推荐）
-sudo apt install ninja-build
-
-# 脚本会自动检测并使用 Ninja
-```
-
-## Windows 构建
-
-### 1. 环境要求
-
-- **Qt**: 6.10.0 或更高版本（MinGW 64-bit）
-- **MinGW**: 13.1.0 或更高版本（通常随 Qt 安装）
-- **CMake**: 3.21+ （可选，脚本会自动使用 Qt 自带的 CMake）
-- **PowerShell**: Windows PowerShell 5.1+ 或 PowerShell Core 7+
-- **WiX Toolset 6.0**: （可选，用于生成 MSI 安装包）
-
-### 2. 自动环境检测
-
-构建脚本会自动检测以下路径（按优先级）：
-
-**Qt 安装路径**：
+**Qt Installation Path**:
 - `D:\Qt\6.10.1\mingw_64`
 - `D:\Qt\6.10.0\mingw_64`
 - `C:\Qt\6.10.1\mingw_64`
 - `C:\Qt\6.10.0\mingw_64`
-- `%USERPROFILE%\Qt\6.10.x\mingw_64`
 
-**MinGW 编译器路径**：
-- `D:\Qt\Tools\mingw1400_64`
-- `D:\Qt\Tools\mingw1310_64`
-- `C:\Qt\Tools\mingw1400_64`
-- `%USERPROFILE%\Qt\Tools\mingw13xx_64`
+### 3. Build Methods
 
-**CMake 路径**（如果系统 PATH 中没有）：
-- `D:\Qt\Tools\CMake_64\bin`
-- `C:\Qt\Tools\CMake_64\bin`
-
-> **提示**：如果 Qt 安装在非标准位置，可以设置环境变量：
-> ```powershell
-> $env:Qt6_DIR = "D:\CustomPath\Qt\6.10.0\mingw_64"
-> $env:MINGW_DIR = "D:\CustomPath\Qt\Tools\mingw1310_64"
-> ```
-
-### 3. 构建方法
-
-#### 方法一：使用 PowerShell 脚本（推荐）
+#### Method 1: PowerShell Script (Recommended)
 
 ```powershell
-# 基本编译（Release 模式）
+# Basic build (Release mode)
 .\scripts\build\build-windows.ps1
 
-# 清理后重新编译
+# Clean and rebuild
 .\scripts\build\build-windows.ps1 -Clean
 
-# Debug 模式编译
+# Debug mode
 .\scripts\build\build-windows.ps1 -DebugBuild
-
-# 清理并编译 Debug 版本
-.\scripts\build\build-windows.ps1 -Clean -DebugBuild
-
-# 指定品牌编译（白标定制）
-.\scripts\build\build-windows.ps1 -Clean -Brand "1"
-
-# 仅更新翻译文件
-.\scripts\build\build-windows.ps1 -UpdateTranslations
-
-# 仅编译翻译
-.\scripts\build\build-windows.ps1 -TranslationsOnly
 ```
 
-#### 方法二：使用批处理包装脚本
+#### Method 2: Batch Wrapper Script
 
 ```batch
-# 基本编译
 scripts\build\build-windows-wrapper.bat
-
-# 清理后重新编译
 scripts\build\build-windows-wrapper.bat --clean
-
-# Debug 模式编译
 scripts\build\build-windows-wrapper.bat --debug
-
-# 清理并编译 Debug 版本
-scripts\build\build-windows-wrapper.bat --clean --debug
-
-# 仅编译翻译
-scripts\build\build-windows-wrapper.bat --translations
 ```
 
-### 4. 构建参数说明
+### 4. Output Files
 
-| 参数 | PowerShell | 批处理 | 说明 |
-|------|-----------|--------|------|
-| 清理构建 | `-Clean` | `--clean` / `-c` | 清理 build-windows 目录后重新编译 |
-| Debug 模式 | `-DebugBuild` | `--debug` / `-d` | 编译 Debug 版本 |
-| 仅翻译 | `-TranslationsOnly` | `--translations` / `-t` | 仅编译翻译文件 |
-| 更新翻译 | `-UpdateTranslations` | - | 运行 lupdate/lrelease 更新翻译 |
-| 指定品牌 | `-Brand "1"` | - | 使用指定白标品牌配置 |
-| 帮助 | - | `--help` / `-h` | 显示帮助信息 |
-
-### 5. 构建流程
-
-脚本会自动执行以下步骤：
-
-1. **[0/4] 复制白标资源**
-   - 从 `white-labeling/<Brand>/` 复制品牌配置
-   - 复制图标文件（app.png, app.ico, app.icns）
-   - 替换授权公钥（如果有）
-
-2. **[1/4] 配置 CMake**
-   - 检测 Qt 和 MinGW 环境
-   - 生成 MinGW Makefiles
-   - 配置构建类型（Debug/Release）
-
-3. **[2/4] 编译应用**
-   - 编译 C++ 源代码
-   - 处理 QML 文件
-   - 编译翻译文件
-
-4. **[3/4] 部署依赖**
-   - 自动运行 windeployqt
-   - 复制 Qt DLLs 和插件
-   - 复制 MinGW 运行时 DLLs
-   - 复制 superray.dll 和 wintun.dll
-
-5. **[4/4] 创建打包**
-   - 生成 ZIP 便携版：`pkg/jingo-{version}-{date}-windows.zip`
-   - 生成 MSI 安装包（如果安装了 WiX）：`pkg/jingo-{version}-{date}-windows.msi`
-   - 复制到 `release/` 目录（Release 模式）
-
-### 6. 输出文件
-
-构建成功后，输出文件位于：
-
-| 类型 | 路径 | 说明 |
-|------|------|------|
-| 可执行文件 | `build-windows/bin/JinGo.exe` | 构建输出（需要 DLLs） |
-| 部署目录 | `pkg/JinGo-1.0.0/` | 包含所有文件的完整部署 |
-| ZIP 包 | `pkg/jingo-1.0.0-{date}-windows.zip` | 便携版压缩包 |
-| MSI 安装包 | `pkg/jingo-1.0.0-{date}-windows.msi` | Windows 安装程序 |
-| Release 目录 | `release/jingo-1.0.0-{date}-windows.zip` | Release 版本输出 |
-
-### 7. 安装 WiX Toolset（可选）
-
-如需生成 MSI 安装包，需要安装 WiX Toolset 6.0：
-
-```powershell
-# 使用 .NET CLI 安装（推荐）
-dotnet tool install --global wix
-
-# 验证安装
-wix --version
-```
-
-安装后脚本会自动检测并生成 MSI 安装包。
-
-### 8. 运行测试
-
-```powershell
-# 直接运行构建输出
-.\build-windows\bin\JinGo.exe
-
-# 或从部署目录运行
-.\pkg\JinGo-1.0.0\JinGo.exe
-
-# 或解压 ZIP 包后运行
-Expand-Archive -Path .\pkg\jingo-*.zip -DestinationPath .\test
-.\test\JinGo-1.0.0\JinGo.exe
-```
-
-## 构建选项速查
-
-| 选项 | 说明 |
+| Type | Path |
 |------|------|
-| `--clean` / `-c` | 清理后重新构建 |
-| `--release` / `-r` | Release 模式 |
-| `--debug` / `-d` | Debug 模式（默认） |
-| `--skip-sign` / `-s` | 跳过签名（macOS） |
-| `--xcode` / `-x` | 生成 Xcode 项目 |
-| `--abi <ABI>` | Android 架构 |
+| Executable | `build-windows/bin/JinGo.exe` |
+| Deploy directory | `pkg/JinGo-1.0.0/` |
+| ZIP package | `pkg/jingo-1.0.0-{date}-windows.zip` |
+| MSI installer | `pkg/jingo-1.0.0-{date}-windows.msi` |
 
-## 输出位置
+## Build Options Quick Reference
 
-| 平台 | Debug | Release |
-|------|-------|---------|
+| Option | Description |
+|--------|-------------|
+| `--clean` / `-c` | Clean before rebuild |
+| `--release` / `-r` | Release mode |
+| `--debug` / `-d` | Debug mode (default) |
+| `--sign` | Enable code signing (macOS) |
+| `--team-id ID` | Apple Development Team ID |
+| `--xcode` / `-x` | Generate Xcode project |
+| `--abi <ABI>` | Android architecture |
+
+## Output Locations
+
+| Platform | Debug | Release |
+|----------|-------|---------|
 | macOS | `build-macos/bin/Debug/JinGo.app` | `build-macos/bin/Release/JinGo.app` |
 | iOS | `build-ios/bin/Debug-iphoneos/` | `build-ios/bin/Release-iphoneos/` |
-| Android | `build-android/android-build/` | 同左 |
-| Linux | `build-linux/bin/JinGo` | 同左 |
-| Windows | `build-windows/bin/JinGo.exe` | 同左 |
+| Android | `build-android/android-build/` | Same |
+| Linux | `build-linux/bin/JinGo` | Same |
+| Windows | `build-windows/bin/JinGo.exe` | Same |
 
-## 常见问题
+## FAQ
 
-### Q: Qt 找不到？
+### Q: Qt not found?
 
-确保构建脚本开头的 Qt 路径正确，并且该目录存在。
+Ensure the Qt path in build script is correct and the directory exists.
 
-### Q: macOS 运行闪退？
+### Q: macOS app crashes on launch?
 
-需要 root 权限运行：`sudo open build-macos/bin/Debug/JinGo.app`
+Root privileges required: `sudo open build-macos/bin/Debug/JinGo.app`
 
-### Q: Linux 网络不工作？
+### Q: Linux network not working?
 
-需要 root 权限或设置 capabilities：
+Root privileges or capabilities required:
 ```bash
 sudo setcap cap_net_admin+eip build-linux/bin/JinGo
 ```
 
-### Q: Android NDK 错误？
+### Q: Android NDK error?
 
-确保 `ANDROID_NDK_VERSION` 与实际安装的 NDK 版本一致。
-
----
-
-## GitHub Actions 自动编译
-
-项目支持通过 GitHub Actions 手动触发全平台自动编译，无需本地环境配置。
-
-### 准备工作
-
-#### 1. 配置白标品牌
-
-在 `white-labeling/` 目录下创建或修改品牌配置：
-
-```
-white-labeling/
-├── 1/                         # 品牌 1
-│   ├── bundle_config.json     # 品牌配置
-│   └── icons/                 # 品牌图标
-│       ├── app.png            # 主图标 (1024x1024)
-│       ├── app.icns           # macOS
-│       ├── app.ico            # Windows
-│       ├── ios/               # iOS 各尺寸
-│       └── android/           # Android 各密度
-```
-
-#### 2. 编辑 bundle_config.json
-
-```json
-{
-    "config": {
-        "panelUrl": "https://your-panel.com",
-        "appName": "YourBrand VPN",
-        "supportEmail": "support@yourbrand.com",
-        "privacyPolicyUrl": "https://yourbrand.com/privacy",
-        "termsOfServiceUrl": "https://yourbrand.com/terms",
-        "telegramUrl": "https://t.me/yourbrand",
-        "docsUrl": "https://docs.yourbrand.com",
-        "latencyTestUrl": "https://www.google.com/generate_204",
-        "ipInfoUrl": "https://ipinfo.io/json",
-        "speedTestBaseUrl": "https://speed.cloudflare.com/__down?bytes=",
-        "hideSubscriptionBlock": false
-    }
-}
-```
-
-#### 3. 准备图标资源
-
-| 文件/目录 | 说明 | 尺寸 |
-|-----------|------|------|
-| `app.png` | 源图标 | 1024x1024 |
-| `app.icns` | macOS 图标 | 多尺寸打包 |
-| `app.ico` | Windows 图标 | 多尺寸打包 |
-| `ios/` | iOS 图标集 | 20-1024px |
-| `android/mipmap-*/` | Android 图标 | mdpi-xxxhdpi |
-
-### 触发编译
-
-#### 方式一：GitHub 网页界面
-
-1. 打开 GitHub 仓库页面
-2. 点击 **Actions** 标签
-3. 选择 **Build All Platforms** 工作流
-4. 点击 **Run workflow**
-5. 选择参数：
-   - **Brand ID**: 选择白标品牌编号 (1-5)
-   - **Build Type**: Debug 或 Release
-   - **Platforms**: 选择构建平台 (all/单平台)
-6. 点击 **Run workflow** 开始构建
-
-#### 方式二：GitHub CLI
-
-```bash
-# 构建所有平台，品牌 1，Release 版本
-gh workflow run build.yml \
-  -f brand_id=1 \
-  -f build_type=Release \
-  -f platforms=all
-
-# 仅构建 macOS，品牌 2，Debug 版本
-gh workflow run build.yml \
-  -f brand_id=2 \
-  -f build_type=Debug \
-  -f platforms=macos
-```
-
-### 构建参数
-
-| 参数 | 说明 | 选项 |
-|------|------|------|
-| `brand_id` | 白标品牌编号 | 1, 2, 3, 4, 5 |
-| `build_type` | 构建类型 | Debug, Release |
-| `platforms` | 目标平台 | all, macos, windows, linux, android, ios |
-
-### 产物下载
-
-构建完成后，在 Actions 运行页面的 **Artifacts** 部分下载编译好的程序：
-
-| 平台 | 产物名称 | 文件类型 | 说明 |
-|------|----------|----------|------|
-| macOS | `JinGo-macOS-BrandX` | `.app` (zip) | 可直接运行的应用程序 |
-| Windows | `JinGo-Windows-BrandX` | `.exe` + DLLs (zip) | 解压后运行 JinGo.exe |
-| Linux | `JinGo-Linux-BrandX` | 可执行文件 (tar.gz) | 解压后 `sudo ./JinGo` |
-| Android | `JinGo-Android-BrandX` | `.apk` | 可直接安装的安装包 |
-| iOS | `JinGo-iOS-BrandX` | `.ipa` (未签名) | 需使用 AltStore/Sideloadly 签名安装 |
-
-### 构建时间参考
-
-| 平台 | 预计时间 |
-|------|----------|
-| macOS | 10-15 分钟 |
-| Windows | 15-20 分钟 |
-| Linux | 10-15 分钟 |
-| Android | 15-20 分钟 |
-| iOS | 10-15 分钟 |
-| **全平台** | **20-30 分钟** (并行) |
-
-### 注意事项
-
-1. **iOS 签名**：
-   - GitHub 可以编译 iOS（使用 macOS runner + Xcode）
-   - 产出的 .ipa 为**未签名**版本
-   - 安装方法：使用 [AltStore](https://altstore.io/) 或 [Sideloadly](https://sideloadly.io/) 自签名安装
-   - 如需分发：需配置 Apple Developer 证书到 GitHub Secrets
-
-2. **Android 签名**：
-   - 产出的 APK 为 debug 签名，可直接安装测试
-   - 发布到应用商店需使用发布密钥重新签名
-
-3. **macOS 公证**：
-   - 产出的 .app 未经公证
-   - 首次运行：右键 → 打开，或 `sudo xattr -rd com.apple.quarantine JinGo.app`
-
-4. **Windows**：
-   - 产出的 .exe 未签名，可能触发 SmartScreen 警告
-   - 点击"更多信息" → "仍要运行"即可
-
-5. **存储限制**：GitHub Actions 产物保留 90 天，请及时下载
+Ensure `ANDROID_NDK_VERSION` matches the actually installed NDK version.
 
 ---
 
-## 下一步
+## GitHub Actions Auto Build
 
-- [开发指南](03_DEVELOPMENT.md)
-- [白标定制](04_WHITE_LABELING.md)
-- [故障排除](05_TROUBLESHOOTING.md)
+Project supports GitHub Actions for cross-platform automated builds without local environment setup.
+
+### Trigger Build
+
+1. Open GitHub repository page
+2. Click **Actions** tab
+3. Select **Build All Platforms** workflow
+4. Click **Run workflow**
+5. Select parameters:
+   - **Brand ID**: Select white-label brand number (1-5)
+   - **Build Type**: Debug or Release
+   - **Platforms**: Select build platform (all/single platform)
+
+### Download Artifacts
+
+After build completion, download from **Artifacts** section:
+
+| Platform | File Type |
+|----------|-----------|
+| macOS | `.app` (zip) |
+| Windows | `.exe` + DLLs (zip) |
+| Linux | executable (tar.gz) |
+| Android | `.apk` |
+| iOS | `.ipa` (unsigned) |
+
+---
+
+## Next Steps
+
+- [Development Guide](03_DEVELOPMENT.md)
+- [White-labeling](04_WHITE_LABELING.md)
+- [Troubleshooting](05_TROUBLESHOOTING.md)

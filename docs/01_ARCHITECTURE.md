@@ -1,31 +1,38 @@
-# JinGo VPN - 架构说明
+# JinGo VPN - Architecture
 
-## 概述
+[中文文档](01_ARCHITECTURE_zh.md)
 
-JinGo VPN 是一个跨平台 VPN 客户端，使用 Qt 6 + QML 构建用户界面。
+## Overview
 
-## 系统架构
+JinGo VPN is a cross-platform VPN client built with Qt 6 + QML for modern user interface, powered by JinDoCore library for VPN functionality.
+
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        JinGo 应用                           │
+│                       JinGo Application                      │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │                    QML 界面层                         │  │
-│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐    │  │
-│  │  │ 首页    │ │ 服务器  │ │ 设置    │ │ 个人中心│    │  │
-│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘    │  │
+│  │                    QML UI Layer                       │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐  │  │
+│  │  │Connection│ │ Servers  │ │Subscript.│ │Settings │  │  │
+│  │  └──────────┘ └──────────┘ └──────────┘ └─────────┘  │  │
 │  └──────────────────────────────────────────────────────┘  │
 │                            │                                │
 │                            ▼                                │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │                 JinDoCore 静态库                      │  │
-│  │      (核心业务逻辑、API、VPN 管理 - 预编译)           │  │
+│  │                 JinDoCore Static Library              │  │
+│  │  ┌────────────┐ ┌────────────┐ ┌────────────┐       │  │
+│  │  │ VPNManager │ │ AuthManager│ │ ConfigMgr  │       │  │
+│  │  └────────────┘ └────────────┘ └────────────┘       │  │
+│  │  ┌────────────┐ ┌────────────┐ ┌────────────┐       │  │
+│  │  │ PanelMgr   │ │ SubsMgr    │ │ DatabaseMgr│       │  │
+│  │  └────────────┘ └────────────┘ └────────────┘       │  │
 │  └──────────────────────────────────────────────────────┘  │
 │                            │                                │
 │                            ▼                                │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │                    平台适配层                         │  │
+│  │                 Platform Adaptation Layer             │  │
 │  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐    │  │
 │  │  │ Android │ │  iOS    │ │ macOS   │ │ Windows │    │  │
 │  │  │  Linux  │ │         │ │         │ │         │    │  │
@@ -34,106 +41,177 @@ JinGo VPN 是一个跨平台 VPN 客户端，使用 Qt 6 + QML 构建用户界�
 │                            │                                │
 │                            ▼                                │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │                 Superray (VPN 引擎)                   │  │
-│  │          TUN 设备管理、流量转发、DNS 管理             │  │
+│  │                 SuperRay (VPN Engine)                 │  │
+│  │     TUN Device, Xray Core, Traffic Routing, DNS       │  │
 │  └──────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 目录结构
+## Directory Structure
 
 ```
 JinGo/
 ├── src/
-│   ├── main.cpp              # 应用入口
-│   └── platform/             # 平台特定代码
-│       ├── android/
-│       ├── apple/            # iOS + macOS
-│       ├── linux/
-│       └── windows/
-├── qml/
-│   ├── Main.qml              # 主界面
-│   ├── pages/                # 页面
-│   └── components/           # 组件
+│   ├── main.cpp              # Application entry
+│   ├── viewmodels/           # MVVM view models
+│   │   ├── ConnectionViewModel.cpp/h
+│   │   ├── LoginViewModel.cpp/h
+│   │   ├── ServerListViewModel.cpp/h
+│   │   └── SettingsViewModel.cpp/h
+│   ├── models/               # QML data models
+│   │   └── SubscriptionListModel.cpp/h
+│   ├── ui/                   # UI components
+│   │   └── SystemTrayManager.cpp/h
+│   └── panel/                # Panel extensions (optional)
+│       └── V2BoardProvider.cpp/h
 ├── resources/
-│   ├── icons/                # 图标
-│   ├── translations/         # 翻译文件
-│   └── geoip/                # GeoIP 数据
+│   ├── qml/                  # QML UI
+│   │   ├── Main.qml          # Main interface
+│   │   ├── pages/            # Page components
+│   │   ├── components/       # Common components
+│   │   └── dialogs/          # Dialogs
+│   ├── icons/                # Icon resources
+│   ├── translations/         # Translation files (*.ts/*.qm)
+│   └── geoip/                # GeoIP data
 ├── platform/
-│   ├── android/              # Android 配置
-│   └── ios/                  # iOS 配置
+│   ├── android/              # Android config
+│   ├── ios/                  # iOS config
+│   ├── macos/                # macOS config
+│   └── windows/              # Windows config
 ├── third_party/
-│   ├── jindo/                # JinDoCore 静态库
-│   ├── superray/             # VPN 引擎
-│   └── *_openssl/            # OpenSSL 库
-└── scripts/build/            # 构建脚本
+│   ├── jindo/                # JinDoCore static library
+│   ├── superray/             # VPN engine
+│   └── *_openssl/            # OpenSSL libraries
+├── scripts/build/            # Build scripts
+└── white-labeling/           # White-label configs
 ```
 
-## 平台适配
+## Core Components
+
+### JinDoCore (Core Library)
+
+JinDoCore is a pre-compiled static library containing all core business logic:
+
+| Module | Function |
+|--------|----------|
+| **VPNManager** | VPN connection management, state control |
+| **ConfigManager** | Xray config generation, routing rules |
+| **AuthManager** | User authentication, token management |
+| **SubscriptionManager** | Subscription parsing, server management |
+| **PanelManager** | Multi-panel support (XBoard/V2Board) |
+| **DatabaseManager** | SQLite data persistence |
+
+### Routing Modes
+
+JinGo supports four routing modes:
+
+| Mode | Description |
+|------|-------------|
+| **Global** | All traffic through proxy |
+| **Rule** | GeoIP-based routing, domestic direct |
+| **Direct** | All traffic direct |
+| **Subscription** | Use routing rules from subscription |
+
+### Traffic Sniffing
+
+Enable sniffing to identify real domain names from TLS handshake for better routing accuracy:
+
+```json
+{
+  "sniffing": {
+    "enabled": true,
+    "destOverride": ["http", "tls", "quic"],
+    "metadataOnly": false
+  }
+}
+```
+
+## Platform Adaptation
 
 ### Android
-- 使用 `VpnService` 创建 VPN
-- 通过 JNI 调用 Superray
-- Socket 保护机制防止流量回环
+- Uses `VpnService` to create VPN
+- JNI calls to SuperRay
+- Socket protection to prevent traffic loopback
 
 ### iOS
-- 使用 `NEPacketTunnelProvider` 扩展
-- App Groups 共享数据
-- XPC 进程间通信
+- Uses `NEPacketTunnelProvider` extension
+- App Groups for data sharing
+- XPC for inter-process communication
 
 ### macOS
-- Root 模式直接创建 TUN 设备
-- 或使用 Network Extension（沙盒模式）
+- JinGoCore service process (TUN device management)
+- JinGoHelper auxiliary tool (routing/DNS configuration)
+- Requires administrator privileges
 
 ### Windows
-- 使用 WinTun 驱动
-- 需要管理员权限安装驱动
+- WinTun driver
+- Requires administrator privileges for driver installation
 
 ### Linux
-- 使用 `/dev/net/tun`
-- 需要 `CAP_NET_ADMIN` 权限或 root
+- `/dev/net/tun` device
+- Requires `CAP_NET_ADMIN` capability or root
 
-## VPN 连接流程
+## VPN Connection Flow
 
 ```
-用户点击连接
+User clicks Connect
       │
       ▼
 ┌─────────────┐
-│ QML 界面    │
+│  QML UI     │
 └──────┬──────┘
        │ connect()
        ▼
 ┌─────────────┐
-│ VPNManager  │ ◄── 状态: Disconnected → Connecting
+│ VPNManager  │ ◄── State: Disconnected → Connecting
+└──────┬──────┘
+       │ 1. Generate Xray config
+       │ 2. Create TUN device
+       │ 3. Start Xray engine
+       │ 4. Configure system routing
+       ▼
+┌─────────────┐
+│  SuperRay   │ ◄── Handle traffic routing
 └──────┬──────┘
        │
        ▼
 ┌─────────────┐
-│  Superray   │ ◄── 1. 创建 TUN 设备
-└──────┬──────┘     2. 启动 Xray 引擎
-       │            3. 配置路由
-       ▼
-┌─────────────┐
-│ VPNManager  │ ◄── 状态: Connecting → Connected
+│ VPNManager  │ ◄── State: Connecting → Connected
 └─────────────┘
 ```
 
-## 依赖关系
+## Dependencies
 
 ```
-JinGo (Qt 应用)
+JinGo (Qt Application)
     │
-    ├── JinDoCore (静态库) ─── third_party/jindo/
+    ├── JinDoCore (Static Library) ─── third_party/jindo/
+    │   └── Core business logic, API, VPN management
     │
-    ├── Superray (动态库) ──── third_party/superray/
+    ├── SuperRay (Dynamic Library) ──── third_party/superray/
+    │   └── Xray core wrapper, TUN management
     │
-    └── OpenSSL (静态库) ───── third_party/*_openssl/
+    └── OpenSSL (Static Library) ───── third_party/*_openssl/
+        └── Encryption support
 ```
 
-所有依赖库已预编译，位于 `third_party/` 目录。
+All dependencies are pre-compiled and located in the `third_party/` directory.
 
-## 相关文档
+## Language Support
 
-- [构建指南](02_BUILD_GUIDE.md)
-- [开发指南](03_DEVELOPMENT.md)
+| Language | Code | Status |
+|----------|------|--------|
+| English | en_US | ✅ |
+| Simplified Chinese | zh_CN | ✅ |
+| Traditional Chinese | zh_TW | ✅ |
+| Vietnamese | vi_VN | ✅ |
+| Khmer | km_KH | ✅ |
+| Burmese | my_MM | ✅ |
+| Russian | ru_RU | ✅ |
+| Persian | fa_IR | ✅ |
+
+## Related Documentation
+
+- [Build Guide](02_BUILD_GUIDE.md)
+- [Development Guide](03_DEVELOPMENT.md)
+- [Panel Extension](07_PANEL_EXTENSION.md)

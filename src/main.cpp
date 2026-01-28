@@ -24,12 +24,12 @@
 #endif
 
 // Network
-#include "network/SubscriptionManager.h"
-#include "network/AuthManager.h"
-#include "network/OrderManager.h"
-#include "network/PaymentManager.h"
-#include "network/TicketManager.h"
-#include "network/SystemConfigManager.h"
+#include "panel/SubscriptionManager.h"
+#include "panel/AuthManager.h"
+#include "panel/OrderManager.h"
+#include "panel/PaymentManager.h"
+#include "panel/TicketManager.h"
+#include "panel/SystemConfigManager.h"
 
 // Storage
 #include "storage/DatabaseManager.h"

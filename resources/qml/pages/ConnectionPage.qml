@@ -1308,32 +1308,37 @@ Rectangle {
                             ComboBox {
                                 id: routingModeCombo
                                 Layout.preferredWidth: 100
-                                model: [qsTr("Global"), qsTr("Rule")]
+                                model: [qsTr("Global"), qsTr("Rule"), qsTr("Subscription")]
 
-                                // 初始化时从配置加载，映射：Global=0, Rule=1
+                                // 枚举映射：Global=0, Rule=1, Direct=2(未使用), Subscription=3
+                                // ComboBox索引：0=Global, 1=Rule, 2=Subscription
+                                function enumToIndex(mode) {
+                                    if (mode === 3) return 2  // Subscription
+                                    if (mode === 2) return 1  // Direct -> Rule (兼容旧配置)
+                                    return mode               // Global=0, Rule=1
+                                }
+
+                                function indexToEnum(idx) {
+                                    if (idx === 2) return 3   // Subscription
+                                    return idx                // Global=0, Rule=1
+                                }
+
                                 Component.onCompleted: {
                                     if (configManager) {
-                                        var mode = configManager.routingMode
-                                        // 0=Global, 1=Rule, 2=Direct(已删除)
-                                        // 如果是Direct(2)，改为Rule(1)
-                                        currentIndex = (mode === 2) ? 1 : mode
+                                        currentIndex = enumToIndex(configManager.routingMode)
                                     }
                                 }
 
-                                // 响应配置变化
                                 Connections {
                                     target: configManager
                                     function onRoutingModeChanged() {
-                                        var mode = configManager.routingMode
-                                        // 映射到新的索引：Global=0, Rule=1
-                                        routingModeCombo.currentIndex = (mode === 2) ? 1 : mode
+                                        routingModeCombo.currentIndex = routingModeCombo.enumToIndex(configManager.routingMode)
                                     }
                                 }
 
                                 onActivated: {
                                     if (configManager) {
-                                        // 新映射：0 = Global, 1 = Rule
-                                        configManager.routingMode = currentIndex
+                                        configManager.routingMode = indexToEnum(currentIndex)
                                     }
                                 }
 

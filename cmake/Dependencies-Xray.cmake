@@ -204,15 +204,6 @@ else()
     message(WARNING "SuperRay header NOT found at: ${SUPERRAY_INCLUDE_DIR}/superray.h")
 endif()
 
-# ============================================================================
-# Backward Compatibility - Set LIBXRAY variables for existing code
-# ============================================================================
-
-# For backward compatibility with code that uses LIBXRAY variables
-set(LIBXRAY_ROOT "${SUPERRAY_ROOT}" CACHE PATH "libxray root directory (alias for SUPERRAY_ROOT)")
-set(LIBXRAY_INCLUDE_DIR "${SUPERRAY_INCLUDE_DIR}" CACHE PATH "libxray include directory (alias for SUPERRAY_INCLUDE_DIR)" FORCE)
-set(LIBXRAY_LIB "${SUPERRAY_LIB}" CACHE FILEPATH "libxray library (alias for SUPERRAY_LIB)")
-
 message(STATUS "SuperRay dependencies configured")
 message(STATUS "========================================")
 message(STATUS "")

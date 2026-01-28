@@ -370,6 +370,11 @@
         <translation>စည်းမျဉ်း</translation>
     </message>
     <message>
+        <location filename="../qml/pages/ConnectionPage.qml" line="1311" />
+        <source>Subscription</source>
+        <translation>စာရင်းသွင်း</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/ConnectionPage.qml" line="1349" />
         <source>* Changes to connection settings require reconnecting to take effect</source>
         <translation>* ချိတ်ဆက်ဆက်တင်ပြောင်းလဲမှုများ အသက်ဝင်ရန် ပြန်ချိတ်ဆက်ရမည်</translation>

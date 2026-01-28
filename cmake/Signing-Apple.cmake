@@ -11,7 +11,7 @@
 #
 # IMPORTANT: All steps run in correct order via a single script:
 # 1. macdeployqt bundles Qt frameworks
-# 2. Remove LibXray.framework
+# 2. Remove SuperRay.framework
 # 3. Fix Qt plugins rpath (MUST happen BEFORE signing)
 # 4. Sign frameworks and app (only if SIGNING_IDENTITY is set)
 #
@@ -68,7 +68,7 @@ endif()
 # Order is critical:
 # 1. macdeployqt bundles Qt frameworks
 # 2. post_build_macos.sh:
-#    a. Remove LibXray.framework
+#    a. Remove SuperRay.framework
 #    b. Fix Qt plugins rpath (BEFORE signing!)
 #    c. Sign everything (only if SIGNING_IDENTITY is set)
 
@@ -99,7 +99,7 @@ add_custom_command(TARGET JinGo POST_BUILD
 message(STATUS "")
 message(STATUS "Post-build workflow:")
 message(STATUS "  1. macdeployqt bundles Qt frameworks")
-message(STATUS "  2. Remove LibXray.framework (using static library)")
+message(STATUS "  2. Remove SuperRay.framework (using static library)")
 message(STATUS "  3. Fix Qt plugins rpath (CRITICAL for app to run)")
 
 if(SIGNING_IDENTITY)

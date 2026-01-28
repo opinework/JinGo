@@ -29,6 +29,7 @@
 
 class VPNCore;        ///< VPN核心（包装XrayCBridge）
 class ConfigManager;  ///< 配置管理器
+class IServerProvider; ///< 服务器提供者接口（用于解耦 SubscriptionManager）
 // TUN设备现在由SuperRay在Network Extension内部处理
 // 桌面平台(Windows/Linux)将使用SuperRay的TUN接口
 class PlatformInterface;  ///< 平台相关接口
@@ -156,6 +157,28 @@ public:
      * @details 清理所有资源，断开活动连接
      */
     ~VPNManager();
+
+    // ========================================================================
+    // 依赖注入
+    // ========================================================================
+
+    /**
+     * @brief 设置服务器提供者
+     * @param provider 实现 IServerProvider 接口的对象指针
+     *
+     * @details
+     * 通过依赖注入设置服务器提供者，解耦 VPNManager 对 SubscriptionManager 的直接依赖。
+     * JinGo 应用在初始化时调用此方法注入 SubscriptionManager。
+     *
+     * @note 如果不设置，restoreLastSelectedServer() 等需要获取服务器的方法将无法工作
+     */
+    void setServerProvider(IServerProvider* provider);
+
+    /**
+     * @brief 获取服务器提供者
+     * @return IServerProvider* 服务器提供者指针，可能为 nullptr
+     */
+    IServerProvider* serverProvider() const;
 
     // ========================================================================
     // 连接控制方法
@@ -1352,6 +1375,7 @@ private:
     VPNCore& m_vpnCore;                      ///< VPN核心引擎（包装XrayCBridge）
     ConfigManager& m_configManager;          ///< 配置管理器引用
     PlatformInterface* m_platformInterface;  ///< 平台接口指针
+    IServerProvider* m_serverProvider;       ///< 服务器提供者（通过依赖注入设置）
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
     NetworkExtensionManager* m_networkExtensionManager;  ///< Network Extension管理器（macOS/iOS TUN模式）

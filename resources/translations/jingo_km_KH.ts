@@ -370,6 +370,11 @@
         <translation>ច្បាប់</translation>
     </message>
     <message>
+        <location filename="../qml/pages/ConnectionPage.qml" line="1311" />
+        <source>Subscription</source>
+        <translation>ការជាវ</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/ConnectionPage.qml" line="1349" />
         <source>* Changes to connection settings require reconnecting to take effect</source>
         <translation>* ការផ្លាស់ប្ដូរការកំណត់ការភ្ជាប់ត្រូវការភ្ជាប់ម្ដងទៀត</translation>
